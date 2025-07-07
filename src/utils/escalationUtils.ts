@@ -1,6 +1,31 @@
 import type { Ticket } from '@/types';
 import { prisma } from '@/lib/prisma';
 
+async function getWaitingTime(ticketId: string): Promise<number> {
+  try {
+    // Get stored waiting time from database
+    const ticket = await prisma.jiraTicket.findUnique({
+      where: { ticketId },
+      select: { totalWaitingHours: true, waitingStartTime: true }
+    });
+
+    if (!ticket) return 0;
+
+    let totalWaitingTime = ticket.totalWaitingHours;
+
+    // If currently waiting, add time since waiting started
+    if (ticket.waitingStartTime) {
+      const currentWaitingDuration = (new Date().getTime() - ticket.waitingStartTime.getTime()) / (1000 * 60 * 60);
+      totalWaitingTime += currentWaitingDuration;
+    }
+
+    return totalWaitingTime;
+  } catch (error) {
+    console.error('Error getting waiting time:', error);
+    return 0;
+  }
+}
+
 export async function getEscalationLevelServer(ticket: Ticket): Promise<string> {
   const ticketId = ticket.code || ticket.key;
   if (!ticketId) {
@@ -36,7 +61,11 @@ export async function getEscalationLevelServer(ticket: Ticket): Promise<string> 
 
   const start = new Date(startDate);
   const now = new Date();
-  const elapsedHours = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
+  let elapsedHours = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
+  
+  // Calculate time spent in "Waiting" status and subtract from elapsed time
+  const waitingTime = await getWaitingTime(ticketId);
+  elapsedHours = Math.max(0, elapsedHours - waitingTime);
   
   // Calculate percentage of time elapsed
   const percentageElapsed = (elapsedHours / timeLimit) * 100;
@@ -51,11 +80,12 @@ export async function getEscalationLevelServer(ticket: Ticket): Promise<string> 
 
   try {
     // Get previously stored escalation level from database
-    const existingRecord = await prisma.escalationHistory.findUnique({
-      where: { ticketId }
+    const existingRecord = await prisma.escalation.findFirst({
+      where: { ticketId },
+      orderBy: { level: 'desc' }
     });
     
-    const previousEscalation = existingRecord?.maxEscalationLevel || "None";
+    const previousEscalation = existingRecord?.level || "None";
     
     // Escalation can only go up, never down
     const escalationOrder = { 'None': 0, 'Lv.1': 1, 'Lv.2': 2 };
@@ -65,37 +95,7 @@ export async function getEscalationLevelServer(ticket: Ticket): Promise<string> 
     // Use the highest escalation level ever reached
     const finalEscalation = currentOrder > previousOrder ? currentEscalation : previousEscalation;
     
-    // Update database if escalation level increased
-    if (currentOrder > previousOrder) {
-      await prisma.escalationHistory.upsert({
-        where: { ticketId },
-        update: {
-          maxEscalationLevel: finalEscalation,
-          lastUpdatedAt: new Date(),
-          priority: ticket.priority?.name,
-          customer: ticket.customer,
-          ticketName: ticket.name || ticket.summary
-        },
-        create: {
-          ticketId,
-          maxEscalationLevel: finalEscalation,
-          firstEscalatedAt: finalEscalation !== "None" ? new Date() : null,
-          priority: ticket.priority?.name,
-          customer: ticket.customer,
-          ticketName: ticket.name || ticket.summary
-        }
-      });
-
-      // Log escalation event
-      await prisma.escalationEvent.create({
-        data: {
-          ticketId,
-          fromLevel: previousEscalation,
-          toLevel: finalEscalation,
-          reason: `Time-based escalation: ${percentageElapsed.toFixed(1)}% of ${timeLimit}h limit reached`
-        }
-      });
-    }
+    // Note: Escalation tracking is now handled by the escalation records in the webhook
     
     return finalEscalation;
   } catch (error) {

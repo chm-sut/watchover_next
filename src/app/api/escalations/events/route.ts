@@ -11,15 +11,18 @@ export async function GET(request: NextRequest) {
     const whereClause = ticketId ? { ticketId } : {};
 
     const [events, total] = await Promise.all([
-      prisma.escalationEvent.findMany({
+      prisma.escalation.findMany({
         where: whereClause,
         take: limit,
         skip: offset,
         orderBy: {
-          timestamp: 'desc'
+          createdAt: 'desc'
+        },
+        include: {
+          ticket: true
         }
       }),
-      prisma.escalationEvent.count({ where: whereClause })
+      prisma.escalation.count({ where: whereClause })
     ]);
 
     return NextResponse.json({

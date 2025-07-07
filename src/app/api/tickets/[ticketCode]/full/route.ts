@@ -31,7 +31,7 @@ function extractTextFromJiraDescription(description: unknown): string {
     return description;
   }
   
-  if (!description || !description.content) {
+  if (!description || typeof description !== 'object' || !('content' in description)) {
     return "No description available";
   }
   
@@ -40,23 +40,26 @@ function extractTextFromJiraDescription(description: unknown): string {
     if (typeof node === 'string') return node;
     if (!node) return '';
     
-    if (node.type === 'text') {
-      return node.text || '';
+    const nodeObj = node as Record<string, unknown>;
+    
+    if (nodeObj.type === 'text') {
+      return (nodeObj.text as string) || '';
     }
     
-    if (node.content && Array.isArray(node.content)) {
-      return node.content.map(extractText).join(' ');
+    if (nodeObj.content && Array.isArray(nodeObj.content)) {
+      return nodeObj.content.map(extractText).join(' ');
     }
     
-    if (node.text) {
-      return node.text;
+    if (nodeObj.text) {
+      return nodeObj.text as string;
     }
     
     return '';
   }
   
   try {
-    return extractText(description).trim() || "No description available";
+    const descObj = description as Record<string, unknown>;
+    return extractText(descObj.content).trim() || "No description available";
   } catch (error) {
     console.error('Error extracting text from description:', error);
     return "Description unavailable";
@@ -83,6 +86,8 @@ const mapStatusToSteps = (statusHistory: { toStatus: string }[], currentStatus: 
   
   const statusMapping: { [key: string]: number } = {
     'Open': 0,
+    'Assign Engineer': 1,
+    'Assign Enginner': 1,
     'In Progress': 1,
     'Waiting': 2,
     'Investigating': 2,
@@ -191,10 +196,15 @@ export async function GET(
 
     // Map status changes to timeline steps
     const currentStatus = issue.fields.status?.name || "Unknown";
+    console.log(`🔍 COS-1715 Debug - Current Status: "${currentStatus}"`);
+    console.log(`🔍 COS-1715 Debug - Status History:`, statusChanges.map(s => s.toStatus));
+    
     const steps = mapStatusToSteps(statusChanges, currentStatus);
+    console.log(`🔍 COS-1715 Debug - Mapped Steps:`, steps);
 
     // If ticket was cancelled, return 404
     if (steps === null) {
+      console.log(`🔍 COS-1715 Debug - Ticket was cancelled`);
       return NextResponse.json({ error: "Ticket was cancelled and is not available" }, { status: 404 });
     }
 

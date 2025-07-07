@@ -26,7 +26,21 @@ export default function TicketInformationPage() {
         })
         .catch((err) => {
           console.error("Error fetching ticket data:", err);
-          setLoading(false);
+          // Try fallback to basic endpoint
+          fetch(`/api/tickets/${ticketCode}`)
+            .then((res) => {
+              if (!res.ok) throw new Error("Fallback network response was not ok");
+              return res.json();
+            })
+            .then((data) => {
+              console.log("Using fallback endpoint data:", data);
+              setTicket(data);
+              setLoading(false);
+            })
+            .catch((fallbackErr) => {
+              console.error("Error fetching fallback ticket data:", fallbackErr);
+              setLoading(false);
+            });
         });
     }
   }, [ticketCode]);
@@ -237,7 +251,7 @@ export default function TicketInformationPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm whitespace-nowrap">Date:</span>
                           <span className="whitespace-nowrap">
-                            {ticket.statusHistory && ticket.statusHistory[index] 
+                            {ticket.statusHistory && ticket.statusHistory[index] && ticket.statusHistory[index].created
                               ? formatDate(ticket.statusHistory[index].created) 
                               : (isCompleted || isInProgress ? (ticket.startDate ? formatDate(ticket.startDate) : '-') : '-')
                             }
@@ -246,8 +260,8 @@ export default function TicketInformationPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm whitespace-nowrap">Author:</span>
                           <span className="whitespace-nowrap">
-                            {ticket.statusHistory && ticket.statusHistory[index]
-                              ? ticket.statusHistory[index].author.displayName
+                            {ticket.statusHistory && ticket.statusHistory[index] && ticket.statusHistory[index].author
+                              ? ticket.statusHistory[index].author?.displayName
                               : (isCompleted || isInProgress ? ticket.reporter?.displayName || 'System' : '-')
                             }
                           </span>

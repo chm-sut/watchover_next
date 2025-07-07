@@ -1,0 +1,69 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model JiraTicket {
+  ticketId          String   @id
+  summary           String
+  priority          String
+  status            String
+  assignee          String?
+  assigneeEmail     String?
+  reporter          String?
+  reporterEmail     String?
+  customer          String?
+  description       String?  // Store ticket description
+  createDate        DateTime
+  lastUpdated       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  totalWaitingHours Float    @default(0) // Total hours spent in Waiting status
+  waitingStartTime  DateTime? // When current waiting period started (null if not waiting)
+
+  escalations       Escalation[]
+  statusHistory     StatusHistory[]
+
+  @@map("jira_tickets")
+}
+
+model Escalation {
+  ticketId      String
+  level         String      // 'Lv.1', 'Lv.2', etc.
+  scheduledTime DateTime    // When escalation should trigger
+  sentTime      DateTime?   // When notification was actually sent
+  isSent        Boolean     @default(false)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  ticket        JiraTicket  @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
+
+  @@id([ticketId, level])
+  @@map("escalations")
+}
+
+model Customer {
+  objectId  String   @id
+  name      String
+  objectKey String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("customers")
+}
+
+model StatusHistory {
+  id          String   @id @default(cuid())
+  ticketId    String
+  fromStatus  String?  // Previous status (null for initial status)
+  toStatus    String   // New status
+  changedAt   DateTime @default(now())
+  
+  ticket      JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
+  
+  @@map("status_history")
+}

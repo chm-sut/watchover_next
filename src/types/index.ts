@@ -35,15 +35,16 @@ export interface Ticket {
   steps?: Array<number>;
   escalationLevel?: string;
   statusHistory?: Array<{
-    id: string;
-    created: string;
-    author: {
+    id?: string;
+    created?: string;
+    author?: {
       displayName: string;
       emailAddress: string;
     };
-    fromStatus: string;
+    fromStatus: string | null;
     toStatus: string;
-    timestamp: number;
+    timestamp?: number;
+    changedAt?: string;
   }>;
   timeline?: {
     created?: string;

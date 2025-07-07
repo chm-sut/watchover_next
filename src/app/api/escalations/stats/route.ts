@@ -10,20 +10,20 @@ export async function GET() {
       recentEvents,
       escalationsByPriority
     ] = await Promise.all([
-      prisma.escalationHistory.count(),
-      prisma.escalationHistory.count({ where: { maxEscalationLevel: 'Lv.1' } }),
-      prisma.escalationHistory.count({ where: { maxEscalationLevel: 'Lv.2' } }),
-      prisma.escalationEvent.count({
+      prisma.escalation.count(),
+      prisma.escalation.count({ where: { level: 'Lv.1' } }),
+      prisma.escalation.count({ where: { level: 'Lv.2' } }),
+      prisma.escalation.count({
         where: {
-          timestamp: {
+          sentTime: {
             gte: new Date(Date.now() - 24 * 60 * 60 * 1000) // Last 24 hours
           }
         }
       }),
-      prisma.escalationHistory.groupBy({
-        by: ['priority'],
+      prisma.escalation.groupBy({
+        by: ['level'],
         _count: {
-          priority: true
+          level: true
         }
       })
     ]);
@@ -38,7 +38,7 @@ export async function GET() {
         },
         recentEvents24h: recentEvents,
         escalationsByPriority: escalationsByPriority.reduce((acc, item) => {
-          acc[item.priority || 'Unknown'] = item._count.priority;
+          acc[item.level || 'Unknown'] = item._count.level;
           return acc;
         }, {} as Record<string, number>)
       }

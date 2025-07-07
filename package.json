@@ -10,7 +10,9 @@
     "update-customers": "node scripts/update-customer-map.js",
     "migrate-customers": "node scripts/migrate-customers-to-db.js",
     "db:push": "prisma db push",
-    "db:generate": "prisma generate"
+    "db:generate": "prisma generate",
+    "sync-jira": "node scripts/sync-jira-to-db.js",
+    "fetch-customers": "python3 scripts/fetch_customers.py"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

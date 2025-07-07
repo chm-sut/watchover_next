@@ -31,7 +31,7 @@ function extractTextFromJiraDescription(description: unknown): string {
     return description;
   }
   
-  if (!description || !description.content) {
+  if (!description || typeof description !== 'object' || !('content' in description)) {
     return "No description available";
   }
   
@@ -40,28 +40,62 @@ function extractTextFromJiraDescription(description: unknown): string {
     if (typeof node === 'string') return node;
     if (!node) return '';
     
-    if (node.type === 'text') {
-      return node.text || '';
+    const nodeObj = node as Record<string, unknown>;
+    
+    if (nodeObj.type === 'text') {
+      return (nodeObj.text as string) || '';
     }
     
-    if (node.content && Array.isArray(node.content)) {
-      return node.content.map(extractText).join(' ');
+    if (nodeObj.content && Array.isArray(nodeObj.content)) {
+      return nodeObj.content.map(extractText).join(' ');
     }
     
-    if (node.text) {
-      return node.text;
+    if (nodeObj.text) {
+      return nodeObj.text as string;
     }
     
     return '';
   }
   
   try {
-    return extractText(description).trim() || "No description available";
+    const descObj = description as Record<string, unknown>;
+    return extractText(descObj.content).trim() || "No description available";
   } catch (error) {
     console.error('Error extracting text from description:', error);
     return "Description unavailable";
   }
 }
+
+// Function to map JIRA status to timeline steps
+const mapStatusToSteps = (currentStatus: string) => {
+  const statusMapping: { [key: string]: number } = {
+    'Open': 0,
+    'Assign Engineer': 1,
+    'Assign Enginner': 1,
+    'In Progress': 1,
+    'Waiting': 2,
+    'Investigating': 2,
+    'Resolved': 3,
+    'Closed': 4,
+    'Done': 4
+  };
+
+  const steps = [0, 0, 0, 0, 0];
+  const stepIndex = statusMapping[currentStatus];
+  
+  if (stepIndex !== undefined) {
+    // Mark all previous steps as completed
+    for (let i = 0; i <= stepIndex; i++) {
+      steps[i] = 2;
+    }
+    // Mark current step as in progress if not the last step
+    if (stepIndex < 4) {
+      steps[stepIndex] = 1;
+    }
+  }
+
+  return steps;
+};
 
 async function getCustomerName(objectId: string) {
   if (customerMap[objectId]) {
@@ -132,6 +166,11 @@ export async function GET(
       customerName = await getCustomerName(customerObj.objectId);
     }
 
+    const currentStatus = issue.fields.status?.name || "Open";
+    console.log(`🔍 COS-1715 Basic Debug - Current Status: "${currentStatus}"`);
+    const mappedSteps = mapStatusToSteps(currentStatus);
+    console.log(`🔍 COS-1715 Basic Debug - Mapped Steps:`, mappedSteps);
+
     const ticket = {
       code: issue.key,
       name: issue.fields.summary,
@@ -140,7 +179,7 @@ export async function GET(
       },
       customer: customerName,
       startDate: issue.fields.created?.split("T")[0] || "Unknown",
-      status: issue.fields.status?.name || "Unknown",
+      status: currentStatus,
       description: extractTextFromJiraDescription(issue.fields.description),
       assignee: issue.fields.assignee ? {
         displayName: issue.fields.assignee.displayName,
@@ -153,16 +192,16 @@ export async function GET(
       created: issue.fields.created,
       updated: issue.fields.updated,
       resolutionDate: issue.fields.resolutiondate,
-      steps: [0, 0, 0, 0, 0], // Will be enhanced with actual status tracking
+      steps: mappedSteps
     };
 
     return NextResponse.json(ticket);
   } catch (error: unknown) {
-    console.error("Failed to fetch ticket:", error.response?.data || error.message);
+    console.error("Failed to fetch ticket:", error instanceof Error ? error.message : error);
     return NextResponse.json(
       {
         error: "Failed to fetch ticket",
-        details: error instanceof Error && 'response' in error ? (error as { response?: { data?: unknown } }).response?.data || error.message : error instanceof Error ? error.message : 'Unknown error',
+        details: error instanceof Error ? error.message : 'Unknown error',
       },
       { status: 500 }
     );

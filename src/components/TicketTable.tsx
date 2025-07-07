@@ -19,6 +19,8 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [ticketData, setTicketData] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
 
   const getStatusIcon = (status: number) => {
@@ -36,7 +38,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   };
 
 
-  const filteredTickets = ticketData.filter((t) => {
+  const filteredTickets = (Array.isArray(ticketData) ? ticketData : []).filter((t) => {
     const matchCode = !filters.code || t.code === filters.code;
     const matchName = !filters.name || t.name === filters.name;
     const matchPriority = !filters.priority || t.priority?.name === filters.priority;
@@ -79,35 +81,71 @@ export default function TicketTable({ filters }: { filters: Filters }) {
 
   const logoWhite = "#F5F7FA";
 
-  useEffect(() => {
-    setIsLoading(true);
-    // Use database endpoint to fetch tickets from JIRA webhook database
-    fetch("/api/tickets/database")
-      .then((res) => {
-        if (!res.ok) throw new Error("Network response was not ok");
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Fetched database ticket data:", data);
+  const checkForUpdates = async () => {
+    try {
+      const res = await fetch("/api/tickets/check-updates");
+      if (!res.ok) return false;
+      
+      const data = await res.json();
+      if (!data.lastUpdated) return false;
+      
+      // If we haven't checked before, or there's a newer update
+      if (!lastUpdated || new Date(data.lastUpdated) > new Date(lastUpdated)) {
+        setLastUpdated(data.lastUpdated);
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Error checking for updates:", error);
+      return false;
+    }
+  };
+
+  const fetchTickets = async (isInitialLoad = false) => {
+    if (!isInitialLoad) setIsRefreshing(true);
+    
+    try {
+      const res = await fetch("/api/tickets/database");
+      if (!res.ok) throw new Error("Network response was not ok");
+      const data = await res.json();
+      console.log("Fetched database ticket data:", data);
+      setTicketData(data);
+      setIsLoading(false);
+    } catch (err) {
+      console.error("Error fetching database ticket data:", err);
+      // Fallback to regular tickets endpoint if database fails
+      try {
+        const res = await fetch("/api/tickets");
+        const data = await res.json();
+        console.log("Fetched fallback ticket data:", data);
         setTicketData(data);
         setIsLoading(false);
-      })
-      .catch((err) => {
-        console.error("Error fetching database ticket data:", err);
-        // Fallback to regular tickets endpoint if database fails
-        fetch("/api/tickets")
-          .then((res) => res.json())
-          .then((data) => {
-            console.log("Fetched fallback ticket data:", data);
-            setTicketData(data);
-            setIsLoading(false);
-          })
-          .catch((fallbackErr) => {
-            console.error("Error fetching fallback ticket data:", fallbackErr);
-            setIsLoading(false);
-          });
-      });
-  }, []);
+      } catch (fallbackErr) {
+        console.error("Error fetching fallback ticket data:", fallbackErr);
+        setIsLoading(false);
+      }
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchTickets(true);
+
+    // Smart refresh: only fetch data when there are actual updates
+    const smartRefreshInterval = setInterval(async () => {
+      const hasUpdates = await checkForUpdates();
+      if (hasUpdates) {
+        console.log("📊 Updates detected, refreshing ticket data...");
+        fetchTickets();
+      }
+    }, 30000); // Check for updates every 30 seconds, but only refresh if needed
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(smartRefreshInterval);
+  }, [lastUpdated]);
 
   // Loading screen component
   if (isLoading) {
@@ -129,10 +167,19 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   return (
     <div className="w-full overflow-x-auto h-full rounded-md bg-black bg-opacity-10">
       <div className="min-w-[900px]">
+        {/* Smart refresh indicator */}
+        {isRefreshing && (
+          <div className="bg-green-600 bg-opacity-80 text-white text-xs px-3 py-1 text-center">
+            📊 New updates detected - refreshing data...
+          </div>
+        )}
         <table className="w-full text-left text-sm text-white table-auto font-body">
           <thead className="sticky top-0 z-10 bg-logoBlack bg-opacity-10 backdrop-blur-md border-b border-gray-600">
             <tr>
-              <th className="px-4 py-2 whitespace-nowrap">Code</th>
+              <th className="px-4 py-2 whitespace-nowrap">
+                Code
+                {isRefreshing && <span className="ml-2 text-green-400">📊</span>}
+              </th>
               <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Priority</th>
               <th className="px-4 py-2 whitespace-nowrap">Escalation Lv.</th>
@@ -142,6 +189,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
               <th className="px-4 py-2 text-center">Create</th>
               <th className="px-4 py-2 text-center">Acknowledge</th>
               <th className="px-4 py-2 text-center">Investigate</th>
+              <th className="px-4 py-2 text-center">Waiting</th>
               <th className="px-4 py-2 text-center">Resolve</th>
               <th className="px-4 py-2 text-center">Completed</th>
             </tr>
@@ -174,11 +222,11 @@ export default function TicketTable({ filters }: { filters: Filters }) {
                       size="sm"
                     />
                   </td>
-                  {t.steps?.slice(0, 4).map((status: number, i: number) => (
+                  {t.steps?.slice(0, 5).map((status: number, i: number) => (
                     <td key={i} className="text-center">
                       {getStatusIcon(status)}
                     </td>
-                  )) || Array.from({length: 4}).map((_, i) => (
+                  )) || Array.from({length: 5}).map((_, i) => (
                     <td key={i} className="text-center">
                       {getStatusIcon(0)}
                     </td>

@@ -8,14 +8,17 @@ export async function GET(request: NextRequest) {
     const offset = parseInt(searchParams.get('offset') || '0');
 
     const [escalations, total] = await Promise.all([
-      prisma.escalationHistory.findMany({
+      prisma.escalation.findMany({
         take: limit,
         skip: offset,
         orderBy: {
-          lastUpdatedAt: 'desc'
+          updatedAt: 'desc'
+        },
+        include: {
+          ticket: true
         }
       }),
-      prisma.escalationHistory.count()
+      prisma.escalation.count()
     ]);
 
     return NextResponse.json({
