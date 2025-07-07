@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    container_name: watchover-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: watchover
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: watchover_secure_2024
+      POSTGRES_INITDB_ARGS: "--auth-host=scram-sha-256"
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init-db:/docker-entrypoint-initdb.d
+    networks:
+      - watchover-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d watchover"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  watchover-network:
+    driver: bridge
