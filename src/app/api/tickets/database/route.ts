@@ -65,7 +65,7 @@ async function calculateEscalationLevel(escalations: Array<{level: string, sched
 
 function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | null, toStatus: string, changedAt: Date}>, currentStatus: string): number[] {
   // Define status mapping to step progression
-  const statusToStep = {
+  const statusToStep: { [key: string]: number } = {
     // Step 0: Create (always done if ticket exists)
     'To Do': 0,
     'Open': 0,
@@ -75,6 +75,7 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
     // Step 1: Acknowledge
     'Acknowledged': 1,
     'In Progress': 1,
+    'ASSIGN ENGINEER': 1,
     'ASSIGN ENGINNER': 1,
     
     // Step 2: Investigate  
@@ -88,9 +89,9 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
     'Resolving': 4,
     'Ready for Testing': 4,
     'Testing': 4,
+    'Resolved': 4,  // Resolved should be step 4 (Resolve), not step 5
     
     // Step 5: Complete
-    'Resolved': 5,
     'Closed': 5,
     'Done': 5,
     'Completed': 5
@@ -98,12 +99,18 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
   
   const steps = [2, 0, 0, 0, 0, 0]; // Create is always done
   
+  // Special case: if ticket is completed, mark all as done
+  if (['Closed', 'Done', 'Completed'].includes(currentStatus)) {
+    steps.fill(2);
+    return steps;
+  }
+  
   if (statusHistory.length === 0) {
     // No history, use current status only
     const stepIndex = statusToStep[currentStatus];
     if (stepIndex !== undefined) {
       for (let i = 1; i <= stepIndex && i < 6; i++) {
-        steps[i] = i === stepIndex ? 1 : 2; // Current step = in progress, previous = done
+        steps[i] = 2; // Mark all steps up to current as done
       }
     }
     return steps;
@@ -126,16 +133,12 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
   
   // Fill steps array based on progression
   for (let i = 1; i <= finalStepIndex && i < 6; i++) {
-    if (i < finalStepIndex) {
-      steps[i] = 2; // Completed steps
-    } else {
-      steps[i] = 1; // Current step (in progress)
-    }
+    steps[i] = 2; // Mark all completed steps as done
   }
   
-  // Special case: if ticket is completed, mark all as done
-  if (['Resolved', 'Closed', 'Done', 'Completed'].includes(currentStatus)) {
-    steps.fill(2);
+  // If currently in Waiting status, mark Waiting step as in progress
+  if (currentStatus === 'Waiting') {
+    steps[3] = 1; // Waiting step is in progress
   }
   
   return steps;
@@ -159,27 +162,42 @@ export async function GET() {
     });
 
     // Transform the data to match the expected format
-    const transformedTickets = await Promise.all(tickets.map(async ticket => ({
-      code: ticket.ticketId,
-      name: ticket.summary,
-      priority: {
-        name: ticket.priority.toUpperCase()
-      },
-      customer: ticket.customer || 'Unknown',
-      startDate: ticket.createDate.toISOString().split('T')[0],
-      status: ticket.status,
-      escalationLevel: await calculateEscalationLevel(ticket.escalations, ticket.status, ticket.ticketId, ticket.createDate, ticket.priority),
-      escalations: ticket.escalations,
-      assignee: ticket.assignee,
-      reporter: ticket.reporter,
-      created: ticket.createDate.toISOString().split('T')[0],
-      steps: getStepStatusFromHistory(ticket.statusHistory, ticket.status),
-      statusHistory: ticket.statusHistory.map(history => ({
-        fromStatus: history.fromStatus,
-        toStatus: history.toStatus,
-        changedAt: history.changedAt.toISOString()
-      }))
-    })));
+    const transformedTickets = await Promise.all(tickets.map(async ticket => {
+      // Calculate total waiting time
+      let totalWaitingTime = ticket.totalWaitingHours;
+      if (ticket.waitingStartTime) {
+        const currentWaitingDuration = (new Date().getTime() - ticket.waitingStartTime.getTime()) / (1000 * 60 * 60);
+        totalWaitingTime += currentWaitingDuration;
+      }
+
+      return {
+        code: ticket.ticketId,
+        name: ticket.summary,
+        priority: {
+          name: ticket.priority.toUpperCase()
+        },
+        customer: ticket.customer || 'Unknown',
+        startDate: ticket.createDate.toISOString().split('T')[0],
+        status: ticket.status,
+        escalationLevel: await calculateEscalationLevel(ticket.escalations, ticket.status, ticket.ticketId, ticket.createDate, ticket.priority),
+        escalations: ticket.escalations,
+        assignee: ticket.assignee,
+        reporter: ticket.reporter,
+        created: ticket.createDate.toISOString().split('T')[0],
+        steps: getStepStatusFromHistory(ticket.statusHistory, ticket.status),
+        statusHistory: ticket.statusHistory.map(history => ({
+          fromStatus: history.fromStatus,
+          toStatus: history.toStatus,
+          changedAt: history.changedAt.toISOString(),
+          authorName: history.authorName,
+          authorEmail: history.authorEmail
+        })),
+        // Add waiting time information
+        totalWaitingHours: totalWaitingTime,
+        isCurrentlyWaiting: ticket.status === 'Waiting',
+        waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+      };
+    }));
 
     return NextResponse.json(transformedTickets);
   } catch (error: unknown) {

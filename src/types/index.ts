@@ -45,12 +45,18 @@ export interface Ticket {
     toStatus: string;
     timestamp?: number;
     changedAt?: string;
+    authorName?: string | null;
+    authorEmail?: string | null;
   }>;
   timeline?: {
     created?: string;
     updated?: string;
     resolved?: string;
   };
+  // Waiting time tracking
+  totalWaitingHours?: number;
+  isCurrentlyWaiting?: boolean;
+  waitingStartTime?: string | null;
 }
 
 export interface Filters {

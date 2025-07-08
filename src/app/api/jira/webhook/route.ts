@@ -57,6 +57,7 @@ interface JiraWebhookPayload {
       status: {
         name: string;
       };
+      description?: unknown;
       assignee?: {
         displayName: string;
         emailAddress: string;
@@ -177,7 +178,9 @@ export async function POST(request: NextRequest) {
             ticketId: issue.key,
             fromStatus: existingTicket.status,
             toStatus: ticketData.status,
-            changedAt: new Date()
+            changedAt: new Date(),
+            authorName: ticketData.assignee || 'System',
+            authorEmail: ticketData.assigneeEmail || null
           }
         });
         console.log('📝 Status changed from', existingTicket.status, 'to', ticketData.status, 'for ticket:', issue.key);
@@ -241,7 +244,9 @@ export async function POST(request: NextRequest) {
           ticketId: issue.key,
           fromStatus: null, // Initial status
           toStatus: ticketData.status,
-          changedAt: ticketData.createDate
+          changedAt: ticketData.createDate,
+          authorName: ticketData.reporter || 'System',
+          authorEmail: ticketData.reporterEmail || null
         }
       });
       

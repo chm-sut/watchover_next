@@ -1,0 +1,881 @@
+
+> watchover@0.1.0 dev
+> next dev
+
+   ▲ Next.js 15.3.4
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.10.1:3000
+   - Environments: .env
+
+ ✓ Starting...
+ ✓ Ready in 1387ms
+ ○ Compiling /api/tickets/check-updates ...
+ ✓ Compiled /api/tickets/check-updates in 776ms (364 modules)
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 956ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 59ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 40ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 35ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 39ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 33ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 32ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 37ms
+ ✓ Compiled /api/jira/webhook in 210ms (367 modules)
+🔔 JIRA Webhook received: {
+  event: 'jira:issue_created',
+  ticketId: 'COS-TEST123',
+  eventType: undefined
+}
+Customer test-customer-id not found in database
+✅ Created new ticket: COS-TEST123
+ POST /api/jira/webhook 200 in 286ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 52ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 41ms
+ ○ Compiling /ticket/ticket-info ...
+ ✓ Compiled /ticket/ticket-info in 788ms (775 modules)
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 876ms
+ ✓ Compiled /api/tickets/[ticketCode]/full in 193ms (906 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+(node:507044) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 1353ms
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 376ms
+✅ Loaded 1253 customers from JSON
+ ✓ Compiled /api/tickets/[ticketCode] in 246ms (911 modules)
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 304ms
+ GET /api/tickets/database 200 in 10ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 950ms
+ ✓ Compiled /api/tickets in 172ms (913 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 472ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 679ms
+ GET /api/tickets 200 in 398ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 42ms
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Waiting"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINNER', 'In Progress', 'Waiting' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 1, 0, 0 ]
+ GET /api/tickets/COS-1732/full 200 in 727ms
+🔍 COS-1715 Debug - Current Status: "Waiting"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINNER', 'In Progress', 'Waiting' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 1, 0, 0 ]
+ GET /api/tickets/COS-1732/full 200 in 389ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 30ms
+ GET /api/tickets/database 200 in 11ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 238ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 379ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 563ms
+ GET /ticket/ticket-info?ticketCode=COS-1778 200 in 10ms
+ GET /api/tickets 200 in 397ms
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1778/full 200 in 466ms
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1778/full 200 in 325ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 15ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 580ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 244ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 454ms
+ GET /api/tickets 200 in 408ms
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 10ms
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 440ms
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 415ms
+ GET /api/tickets/database 200 in 13ms
+ GET /api/tickets/database 200 in 12ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 271ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 279ms
+ GET /api/tickets 200 in 403ms
+ GET /api/tickets 200 in 355ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 43ms
+Error checking for updates: TypeError: Cannot read properties of undefined (reading 'findFirst')
+    at GET (src/app/api/tickets/check-updates/route.ts:9:45)
+   7 |   try {
+   8 |     // Get the most recent update timestamp from the database
+>  9 |     const latestTicket = await prisma.ticket.findFirst({
+     |                                             ^
+  10 |       orderBy: {
+  11 |         updatedAt: 'desc'
+  12 |       },
+ GET /api/tickets/check-updates 500 in 32ms
+ ✓ Compiled in 614ms (442 modules)
+ ✓ Compiled /api/jira/webhook in 33ms (88 modules)
+🔔 JIRA Webhook received: {
+  event: 'jira:issue_updated',
+  ticketId: 'COS-1732',
+  eventType: 'issue_generic'
+}
+📝 Status changed from Waiting to In Progress for ticket: COS-1732
+⏭️ Ending waiting period for ticket: COS-1732, duration: 23.82 hours
+🔄 Recalculating escalation times due to Waiting status change
+✅ Updated escalation times for ticket: COS-1732
+✅ Updated existing ticket: COS-1732
+ POST /api/jira/webhook?triggeredByUser=712020%3Aa6c0b05a-f283-4eab-8df8-486d33355729 200 in 101ms
+ GET /api/tickets/check-updates 200 in 6ms
+ ✓ Compiled /api/tickets/database in 22ms (90 modules)
+ GET /api/tickets/database 200 in 59ms
+ GET /api/tickets/database 200 in 11ms
+🔔 JIRA Webhook received: {
+  event: 'jira:issue_updated',
+  ticketId: 'COS-1732',
+  eventType: 'issue_generic'
+}
+📝 Status changed from In Progress to Waiting for ticket: COS-1732
+⏸️ Starting waiting period for ticket: COS-1732
+🔄 Recalculating escalation times due to Waiting status change
+✅ Updated escalation times for ticket: COS-1732
+✅ Updated existing ticket: COS-1732
+⏸️ Ticket is in Waiting status, escalation paused: COS-1732
+ POST /api/jira/webhook?triggeredByUser=712020%3Aa6c0b05a-f283-4eab-8df8-486d33355729 200 in 19ms
+ ✓ Compiled in 114ms (446 modules)
+ GET /api/tickets/check-updates 200 in 25ms
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 11ms
+ GET /api/tickets/check-updates 200 in 11ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/root/ai/watchover_next/.next/cache/webpack/client-development/0.pack.gz_' -> '/root/ai/watchover_next/.next/cache/webpack/client-development/0.pack.gz'
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/check-updates 200 in 5ms
+ GET /api/tickets/check-updates 200 in 4ms
+ ✓ Compiled in 124ms (442 modules)
+ ✓ Compiled /api/jira/webhook in 19ms (88 modules)
+🔔 JIRA Webhook received: {
+  event: 'jira:issue_updated',
+  ticketId: 'COS-1776',
+  eventType: 'issue_updated'
+}
+✅ Updated existing ticket: COS-1776
+ POST /api/jira/webhook?triggeredByUser=712020%3A4c9d03a5-22d5-4b25-aac3-89741f04edd7 200 in 53ms
+ ○ Compiling /ticket ...
+ ✓ Compiled /ticket in 1736ms (1671 modules)
+ GET /ticket 200 in 2010ms
+ ✓ Compiled /favicon.ico in 78ms (883 modules)
+ GET /favicon.ico 200 in 112ms
+ ✓ Compiled /api/tickets/[ticketCode] in 136ms (885 modules)
+ ✓ Compiled in 0ms (1016 modules)
+ ✓ Compiled in 1ms (1016 modules)
+ ✓ Compiled in 0ms (1016 modules)
+ GET /api/tickets/database 200 in 526ms
+✅ Loaded 1253 customers from JSON
+ GET /ticket 200 in 548ms
+ GET /favicon.ico 200 in 6ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 991ms
+ ✓ Compiled /api/tickets in 92ms (1018 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 552ms
+ ✓ Compiled /ticket/ticket-info in 350ms (1024 modules)
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 401ms
+ ✓ Compiled /api/tickets/[ticketCode]/full in 154ms (1026 modules)
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 601ms
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 371ms
+✅ Loaded 1253 customers from JSON
+ ✓ Compiled in 276ms (1218 modules)
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 95ms
+ ✓ Compiled /api/tickets/[ticketCode] in 87ms (434 modules)
+ ✓ Compiled /ticket in 0ms (565 modules)
+ ✓ Compiled in 0ms (1016 modules)
+ ✓ Compiled in 0ms (1016 modules)
+ GET /api/tickets/database 200 in 488ms
+ ✓ Compiled in 1ms (1016 modules)
+✅ Loaded 1253 customers from JSON
+ ✓ Compiled in 0ms (1016 modules)
+ GET /ticket 200 in 679ms
+ GET /api/tickets/database 200 in 266ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 1245ms
+ ✓ Compiled /api/tickets in 86ms (1018 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 741ms
+ GET /api/tickets 200 in 906ms
+ GET /api/tickets 200 in 433ms
+ ✓ Compiled /api/tickets/check-updates in 179ms (1020 modules)
+ GET /api/tickets/check-updates 200 in 208ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/check-updates 200 in 7ms
+ GET /api/tickets/check-updates 200 in 17ms
+ GET /api/tickets/check-updates 200 in 6ms
+ ✓ Compiled in 300ms (1689 modules)
+ GET /ticket 200 in 75ms
+ GET /api/tickets/check-updates 200 in 12ms
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 12ms
+ ✓ Compiled /api/tickets/[ticketCode]/full in 158ms (1016 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 1101ms
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Resolved"
+🔍 COS-1715 Debug - Status History: [ 'ASSIGN ENGINEER', 'In Progress', 'Resolved' ]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 2, 1, 0 ]
+ GET /api/tickets/COS-1780/full 200 in 670ms
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ ○ Compiling /_not-found ...
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ GET /_next/static/webpack/49ec672a2a182622.webpack.hot-update.json 500 in 2247ms
+ GET /api/tickets/database 500 in 2714ms
+ GET /api/tickets/enhanced 500 in 2712ms
+ GET /ticket 500 in 398ms
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ GET /ticket 500 in 340ms
+ GET /api/tickets/enhanced 500 in 312ms
+ GET /api/tickets 500 in 352ms
+ GET /ticket 500 in 330ms
+ GET /api/tickets/database 500 in 304ms
+ GET /api/tickets 500 in 8ms
+ GET /api/tickets 500 in 7ms
+ ⨯ ./src/app/api/tickets/database/route.ts
+Error:   [31mx[0m Expected a semicolon
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+  [31mx[0m Expression expected
+     ,-[[36;1;4m/root/ai/watchover_next/src/app/api/tickets/database/route.ts[0m:199:1]
+ [2m196[0m |         waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+ [2m197[0m |       };
+ [2m198[0m |     }))
+ [2m199[0m |     })));
+     : [35;1m     ^[0m
+ [2m200[0m | 
+ [2m201[0m |     return NextResponse.json(transformedTickets);
+ [2m202[0m |   } catch (error: unknown) {
+     `----
+
+Caused by:
+    Syntax Error
+
+Import trace for requested module:
+./src/app/api/tickets/database/route.ts
+ ✓ Compiled /favicon.ico in 451ms (2166 modules)
+ GET /_next/static/webpack/7dec696285f8572f.webpack.hot-update.json 404 in 532ms
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ GET /ticket 200 in 157ms
+ GET /ticket 200 in 42ms
+ GET /favicon.ico 200 in 11ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 141ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 638ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 672ms
+ ✓ Compiled in 443ms (2166 modules)
+ GET /ticket 200 in 66ms
+ GET /api/tickets/check-updates 200 in 12ms
+ GET /api/tickets/database 200 in 13ms
+ GET /api/tickets/database 200 in 11ms
+ ✓ Compiled in 312ms (2166 modules)
+ GET /ticket 200 in 47ms
+ ✓ Compiled in 339ms (2166 modules)
+ GET /ticket 200 in 49ms
+ GET /api/tickets/check-updates 200 in 11ms
+ ✓ Compiled in 270ms (2025 modules)
+ GET /ticket 200 in 42ms
+ GET /api/tickets/check-updates 200 in 8ms
+ ✓ Compiled in 106ms (1051 modules)
+ GET /ticket 200 in 10ms
+ ✓ Compiled in 211ms (2023 modules)
+ GET /ticket 200 in 44ms
+ GET /api/tickets/check-updates 200 in 10ms
+ ✓ Compiled in 239ms (2023 modules)
+ GET /ticket 200 in 43ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 11ms
+ ✓ Compiled /api/tickets/[ticketCode]/full in 102ms (1103 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Waiting"
+🔍 COS-1715 Debug - Status History: [
+  'ASSIGN ENGINNER',
+  'In Progress',
+  'Waiting',
+  'In Progress',
+  'Waiting'
+]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 1, 0, 0 ]
+ GET /api/tickets/COS-1732/full 200 in 946ms
+✅ Loaded 1253 customers from JSON
+🔍 COS-1715 Debug - Current Status: "Waiting"
+🔍 COS-1715 Debug - Status History: [
+  'ASSIGN ENGINNER',
+  'In Progress',
+  'Waiting',
+  'In Progress',
+  'Waiting'
+]
+🔍 COS-1715 Debug - Mapped Steps: [ 2, 2, 1, 0, 0 ]
+ GET /api/tickets/COS-1732/full 200 in 685ms
+ ✓ Compiled /api/tickets/database in 193ms (1105 modules)
+ ✓ Compiled (1107 modules)
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 491ms
+ GET /api/tickets/database 200 in 11ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 745ms
+ ✓ Compiled /api/tickets in 109ms (1109 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 662ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 825ms
+ GET /api/tickets 200 in 650ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/check-updates 200 in 5ms
+ GET /api/tickets/check-updates 200 in 12ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/check-updates 200 in 6ms
+ ✓ Compiled in 393ms (2023 modules)
+ GET /ticket 200 in 66ms
+ GET /api/tickets/check-updates 200 in 9ms
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 11ms
+ ✓ Compiled /api/tickets/database in 88ms (974 modules)
+ GET /api/tickets/database 200 in 122ms
+ GET /api/tickets/database 200 in 13ms
+ ✓ Compiled /api/tickets/[ticketCode] in 104ms (1105 modules)
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 312ms
+ GET /api/tickets/database 200 in 11ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 627ms
+✅ Loaded 1253 customers from JSON
+ ✓ Compiled /api/tickets in 101ms (1107 modules)
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 498ms
+ GET /api/tickets 200 in 678ms
+ GET /api/tickets 200 in 373ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 28ms
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 12ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 13ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 281ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 261ms
+ GET /api/tickets 200 in 898ms
+ GET /api/tickets 200 in 397ms
+ GET /ticket/ticket-info?ticketCode=COS-1715 200 in 8ms
+ GET /api/tickets/database 200 in 11ms
+ GET /api/tickets/database 200 in 22ms
+ GET /api/tickets/database 200 in 26ms
+ GET /api/tickets/database 200 in 12ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 259ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 229ms
+ GET /api/tickets 200 in 414ms
+ GET /api/tickets 200 in 427ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 11ms
+ ✓ Compiled in 410ms (2158 modules)
+ GET /ticket 200 in 55ms
+ GET /api/tickets/check-updates 200 in 9ms
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 12ms
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 11ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 50ms
+ GET /api/tickets/database 200 in 10ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 368ms
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 257ms
+ GET /api/tickets 200 in 498ms
+ GET /api/tickets 200 in 377ms
+ GET /ticket/ticket-info?ticketCode=COS-1775 200 in 9ms
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 13ms
+ GET /api/tickets/database 200 in 12ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 236ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 240ms
+ GET /api/tickets 200 in 492ms
+ GET /api/tickets 200 in 412ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 8ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 10ms
+ ✓ Compiled in 376ms (2003 modules)
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 100ms
+ ✓ Compiled /api/tickets/database in 144ms (1099 modules)
+ ✓ Compiled (1103 modules)
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 426ms
+ GET /api/tickets/database 200 in 11ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 816ms
+✅ Loaded 1253 customers from JSON
+ ✓ Compiled /api/tickets in 106ms (1105 modules)
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 498ms
+ GET /api/tickets 200 in 639ms
+ GET /api/tickets 200 in 423ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 43ms
+ GET /api/tickets/database 200 in 16ms
+ GET /api/tickets/database 200 in 12ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 28ms
+ GET /api/tickets/database 200 in 12ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 286ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 435ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 513ms
+ GET /api/tickets 200 in 433ms
+ ✓ Compiled /api/tickets/check-updates in 139ms (1107 modules)
+ GET /api/tickets/check-updates 200 in 192ms
+ GET /api/tickets/database 200 in 13ms
+ GET /api/tickets/database 200 in 11ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/check-updates 200 in 6ms
+ ✓ Compiled in 197ms (1051 modules)
+ GET /ticket 200 in 55ms
+ GET /api/tickets/check-updates 200 in 6ms
+ ✓ Compiled in 119ms (1051 modules)
+ GET /ticket 200 in 10ms
+ GET /api/tickets/check-updates 200 in 5ms
+ ✓ Compiled in 238ms (2023 modules)
+ GET /ticket 200 in 82ms
+ GET /api/tickets/check-updates 200 in 12ms
+ ✓ Compiled in 109ms (1051 modules)
+ GET /ticket 200 in 11ms
+ ✓ Compiled in 430ms (2023 modules)
+ GET /ticket 200 in 123ms
+ GET /api/tickets/check-updates 200 in 10ms
+ ✓ Compiled /api/tickets/database in 119ms (974 modules)
+ GET /api/tickets/database 200 in 219ms
+ GET /ticket 200 in 35ms
+ GET /api/tickets/database 200 in 12ms
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 13ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 12ms
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 80ms
+ ✓ Compiled /favicon.ico in 89ms (976 modules)
+ GET /favicon.ico 200 in 114ms
+ GET /api/tickets/database 200 in 14ms
+ ✓ Compiled in 356ms (2025 modules)
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 47ms
+ GET /api/tickets/database 200 in 29ms
+ ✓ Compiled in 290ms (2023 modules)
+ GET /ticket/ticket-info?ticketCode=COS-1780 200 in 44ms
+ GET /ticket 200 in 12ms
+ GET /api/tickets/database 200 in 27ms
+ ✓ Compiled /api/tickets/[ticketCode] in 346ms (1103 modules)
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets/database 200 in 468ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 1090ms
+ ✓ Compiled /api/tickets in 104ms (1105 modules)
+✅ Loaded 1253 customers from JSON
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 541ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 726ms
+ GET /api/tickets 200 in 591ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 30ms
+ GET /api/tickets/database 200 in 13ms
+ GET /api/tickets/database 200 in 10ms
+ GET /api/tickets/database 200 in 28ms
+ GET /api/tickets/database 200 in 12ms
+✅ Loaded 1253 customers from JSON
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 545ms
+Failed to fetch ticket: Request failed with status code 400
+ GET /api/tickets/enhanced 500 in 263ms
+ GET /api/tickets 200 in 398ms
+✅ Loaded 1253 customers from JSON
+ GET /api/tickets 200 in 427ms
+ ✓ Compiled in 409ms (2156 modules)
+ GET /ticket 200 in 49ms
+ ✓ Compiled /api/tickets/check-updates in 140ms (1107 modules)
+ GET /api/tickets/check-updates 200 in 174ms
+ GET /api/tickets/database 200 in 14ms
+ GET /api/tickets/database 200 in 11ms
+ GET /api/tickets/check-updates 200 in 8ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /api/tickets/check-updates 200 in 5ms
+ GET /api/tickets/check-updates 200 in 6ms
+ GET /ticket/ticket-info?ticketCode=COS-1732 200 in 36ms
+ GET /api/tickets/database 200 in 12ms
+ GET /api/tickets/database 200 in 11ms
+ ✓ Compiled in 184ms (1051 modules)
+ ✓ Compiled in 530ms (2003 modules)
+ ✓ Compiled in 151ms (1051 modules)
+ ✓ Compiled /api/analytics/escalations in 285ms (2009 modules)
+ GET /api/analytics/escalations 200 in 378ms

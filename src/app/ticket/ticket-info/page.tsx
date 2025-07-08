@@ -15,31 +15,51 @@ export default function TicketInformationPage() {
 
   useEffect(() => {
     if (ticketCode) {
-      fetch(`/api/tickets/${ticketCode}/full`)
+      // First try to get ticket from database API (same as TicketTable)
+      fetch("/api/tickets/database")
         .then((res) => {
-          if (!res.ok) throw new Error("Network response was not ok");
+          if (!res.ok) throw new Error("Database API response was not ok");
           return res.json();
         })
         .then((data) => {
-          setTicket(data);
-          setLoading(false);
+          // Find the specific ticket by code
+          const foundTicket = data.find((t: any) => t.code === ticketCode);
+          if (foundTicket) {
+            setTicket(foundTicket);
+            setLoading(false);
+          } else {
+            throw new Error("Ticket not found in database");
+          }
         })
         .catch((err) => {
-          console.error("Error fetching ticket data:", err);
-          // Try fallback to basic endpoint
-          fetch(`/api/tickets/${ticketCode}`)
+          console.error("Error fetching from database API:", err);
+          // Fallback to full endpoint for additional details
+          fetch(`/api/tickets/${ticketCode}/full`)
             .then((res) => {
-              if (!res.ok) throw new Error("Fallback network response was not ok");
+              if (!res.ok) throw new Error("Network response was not ok");
               return res.json();
             })
             .then((data) => {
-              console.log("Using fallback endpoint data:", data);
               setTicket(data);
               setLoading(false);
             })
-            .catch((fallbackErr) => {
-              console.error("Error fetching fallback ticket data:", fallbackErr);
-              setLoading(false);
+            .catch((fullErr) => {
+              console.error("Error fetching ticket data:", fullErr);
+              // Try fallback to basic endpoint
+              fetch(`/api/tickets/${ticketCode}`)
+                .then((res) => {
+                  if (!res.ok) throw new Error("Fallback network response was not ok");
+                  return res.json();
+                })
+                .then((data) => {
+                  console.log("Using fallback endpoint data:", data);
+                  setTicket(data);
+                  setLoading(false);
+                })
+                .catch((fallbackErr) => {
+                  console.error("Error fetching fallback ticket data:", fallbackErr);
+                  setLoading(false);
+                });
             });
         });
     }
@@ -73,6 +93,18 @@ export default function TicketInformationPage() {
     }
   };
 
+  const formatWaitingTime = (hours: number) => {
+    if (hours < 1) {
+      return `${Math.round(hours * 60)} minutes`;
+    } else if (hours < 24) {
+      return `${hours.toFixed(1)} hours`;
+    } else {
+      const days = Math.floor(hours / 24);
+      const remainingHours = Math.round(hours % 24);
+      return `${days} day${days > 1 ? 's' : ''} ${remainingHours}h`;
+    }
+  };
+
 
   const getStepStatus = (stepIndex: number) => {
     if (!ticket || !ticket.steps || !Array.isArray(ticket.steps)) return 0;
@@ -93,7 +125,7 @@ export default function TicketInformationPage() {
     }
   };
 
-  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Resolve", "Complete"];
+  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Waiting", "Resolve", "Complete"];
 
   if (loading) {
     return <TicketTimelineLoader />;
@@ -173,6 +205,23 @@ export default function TicketInformationPage() {
                 <label className="text-darkWhite text-sm block mb-1">Status:</label>
                 <p className="text-logoWhite font-medium">{ticket.currentStatus || ticket.status?.name || 'Unknown'}</p>
               </div>
+              
+              {/* Show waiting time if ticket has waiting data */}
+              {((ticket.totalWaitingHours && ticket.totalWaitingHours > 0) || ticket.isCurrentlyWaiting) && (
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Waiting Time:</label>
+                  <div className="flex items-center gap-2">
+                    <p className="text-logoWhite font-medium">
+                      {formatWaitingTime(ticket.totalWaitingHours || 0)}
+                    </p>
+                    {ticket.isCurrentlyWaiting && (
+                      <span className="px-2 py-1 bg-yellow-600 bg-opacity-80 text-yellow-100 text-xs rounded-full">
+                        Currently Waiting
+                      </span>
+                    )}
+                  </div>
+                </div>
+              )}
               
               <div>
                 <label className="text-darkWhite text-sm block mb-1">Created:</label>
@@ -257,15 +306,55 @@ export default function TicketInformationPage() {
                             }
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs sm:text-sm whitespace-nowrap">Author:</span>
-                          <span className="whitespace-nowrap">
-                            {ticket.statusHistory && ticket.statusHistory[index] && ticket.statusHistory[index].author
-                              ? ticket.statusHistory[index].author?.displayName
-                              : (isCompleted || isInProgress ? ticket.reporter?.displayName || 'System' : '-')
-                            }
-                          </span>
-                        </div>
+                        {/* Only show author if step has been started */}
+                        {(isCompleted || isInProgress) && (
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs sm:text-sm whitespace-nowrap">Updated by:</span>
+                            <span className="whitespace-nowrap">
+                              {/* Find corresponding status history entry for this step */}
+                              {(() => {
+                                // For Create Ticket step, use reporter (who created the ticket)
+                                if (stepName === "Create Ticket") {
+                                  // Check if we have initial status history entry
+                                  const initialHistory = ticket.statusHistory?.find(h => h.fromStatus === null);
+                                  if (initialHistory?.authorName) {
+                                    return initialHistory.authorName;
+                                  }
+                                  // Fallback to reporter
+                                  return (typeof ticket.reporter === 'string' ? ticket.reporter : ticket.reporter?.displayName) || 'Reporter';
+                                }
+                                
+                                // For other steps, find the most relevant status change author
+                                if (ticket.statusHistory && ticket.statusHistory.length > 0) {
+                                  // Use the latest status change author
+                                  const latestHistory = ticket.statusHistory[0]; // statusHistory is ordered desc
+                                  if (latestHistory?.authorName) {
+                                    return latestHistory.authorName;
+                                  }
+                                }
+                                
+                                // Fallback to assignee for non-create steps
+                                return (typeof ticket.assignee === 'string' ? ticket.assignee : ticket.assignee?.displayName) || 'Assignee';
+                              })()}
+                            </span>
+                          </div>
+                        )}
+                        {/* Show waiting time details for Waiting step */}
+                        {stepName === "Waiting" && ((ticket.totalWaitingHours && ticket.totalWaitingHours > 0) || ticket.isCurrentlyWaiting) && (
+                          <>
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs sm:text-sm whitespace-nowrap">Duration:</span>
+                              <span className="whitespace-nowrap text-yellow-300">
+                                {formatWaitingTime(ticket.totalWaitingHours || 0)}
+                              </span>
+                            </div>
+                            {ticket.isCurrentlyWaiting && (
+                              <div className="px-2 py-1 bg-yellow-600 bg-opacity-60 text-yellow-100 text-xs rounded text-center">
+                                ⏳ Currently Waiting
+                              </div>
+                            )}
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

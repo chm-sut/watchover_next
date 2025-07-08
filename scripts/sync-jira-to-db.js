@@ -251,7 +251,9 @@ async function syncJiraToDatabase() {
               ticketId: issue.key,
               fromStatus: change.fromStatus,
               toStatus: change.toStatus,
-              changedAt: change.changedAt
+              changedAt: change.changedAt,
+              authorName: issue.fields.assignee?.displayName || 'System',
+              authorEmail: issue.fields.assignee?.emailAddress || null
             }))
           });
         } else {
@@ -261,7 +263,9 @@ async function syncJiraToDatabase() {
               ticketId: issue.key,
               fromStatus: null,
               toStatus: currentStatus,
-              changedAt: createDate
+              changedAt: createDate,
+              authorName: issue.fields.reporter?.displayName || 'System',
+              authorEmail: issue.fields.reporter?.emailAddress || null
             }
           });
         }

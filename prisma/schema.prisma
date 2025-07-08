@@ -57,13 +57,15 @@ model Customer {
 }
 
 model StatusHistory {
-  id          String   @id @default(cuid())
-  ticketId    String
-  fromStatus  String?  // Previous status (null for initial status)
-  toStatus    String   // New status
-  changedAt   DateTime @default(now())
+  id           String   @id @default(cuid())
+  ticketId     String
+  fromStatus   String?  // Previous status (null for initial status)
+  toStatus     String   // New status
+  changedAt    DateTime @default(now())
+  authorName   String?  // Name of person who made the change
+  authorEmail  String?  // Email of person who made the change
   
-  ticket      JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
+  ticket       JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
   
   @@map("status_history")
 }

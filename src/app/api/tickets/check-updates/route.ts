@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@/lib/prisma';
 
 export async function GET() {
   try {
     // Get the most recent update timestamp from the database
-    const latestTicket = await prisma.ticket.findFirst({
+    const latestTicket = await prisma.jiraTicket.findFirst({
       orderBy: {
         updatedAt: 'desc'
       },

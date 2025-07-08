@@ -45,43 +45,20 @@ export default function FiltersBar({ filters, setFilters }: FiltersBarProps) {
     loadCustomers();
   }, []);
 
-  // Load ticket codes and names from API
+  // Load ticket codes and names from database API
   useEffect(() => {
     async function loadTicketData() {
       try {
-        const response = await fetch('/api/tickets/enhanced');
+        const response = await fetch('/api/tickets/database');
         if (response.ok) {
           const tickets = await response.json();
           const uniqueCodes = [...new Set(tickets.map((ticket: { code: string }) => ticket.code as string))].filter(Boolean).sort() as string[];
           const uniqueNames = [...new Set(tickets.map((ticket: { name: string }) => ticket.name as string))].filter(Boolean).sort() as string[];
           setCodes(uniqueCodes);
           setNames(uniqueNames);
-        } else {
-          // Fallback to regular endpoint if enhanced fails
-          const fallbackResponse = await fetch('/api/tickets');
-          if (fallbackResponse.ok) {
-            const tickets = await fallbackResponse.json();
-            const uniqueCodes = [...new Set(tickets.map((ticket: { code: string }) => ticket.code as string))].filter(Boolean).sort() as string[];
-            const uniqueNames = [...new Set(tickets.map((ticket: { name: string }) => ticket.name as string))].filter(Boolean).sort() as string[];
-            setCodes(uniqueCodes);
-            setNames(uniqueNames);
-          }
         }
       } catch (error) {
         console.error('Failed to load ticket data:', error);
-        // Try fallback endpoint on error
-        try {
-          const fallbackResponse = await fetch('/api/tickets');
-          if (fallbackResponse.ok) {
-            const tickets = await fallbackResponse.json();
-            const uniqueCodes = [...new Set(tickets.map((ticket: { code: string }) => ticket.code as string))].filter(Boolean).sort() as string[];
-            const uniqueNames = [...new Set(tickets.map((ticket: { name: string }) => ticket.name as string))].filter(Boolean).sort() as string[];
-            setCodes(uniqueCodes);
-            setNames(uniqueNames);
-          }
-        } catch (fallbackError) {
-          console.error('Failed to load fallback ticket data:', fallbackError);
-        }
       }
     }
     loadTicketData();
