@@ -220,8 +220,8 @@ export async function GET() {
           fromStatus: history.fromStatus,
           toStatus: history.toStatus,
           changedAt: history.changedAt.toISOString(),
-          authorName: history.authorName,
-          authorEmail: history.authorEmail
+          authorName: history.authorName || null,
+          authorEmail: history.authorEmail || null
         })),
         // Add waiting time information
         totalWaitingHours: totalWaitingTime,
