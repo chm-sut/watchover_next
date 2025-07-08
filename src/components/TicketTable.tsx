@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import TablePagination from "@mui/material/TablePagination";
 import Image from "next/image";
@@ -24,16 +24,16 @@ export default function TicketTable({ filters }: { filters: Filters }) {
 
 
   const getStatusIcon = (status: number) => {
-    const className = "inline-block align-middle w-auto h-auto";
+    const className = "inline-block align-middle w-6 h-6";
     switch (status) {
       case 0:
-        return <Image src="/icons/notStart.svg" alt="Not Started" width={20} height={20} className={className} />;
+        return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
       case 1:
-        return <Image src="/icons/inProgress.svg" alt="In Progress" width={20} height={20} className={className} />;
+        return <Image src="/icons/inProgress.svg" alt="In Progress" width={36} height={36} className={className} />;
       case 2:
-        return <Image src="/icons/Done.svg" alt="Done" width={20} height={20} className={className} />;
+        return <Image src="/icons/Done.svg" alt="Done" width={36} height={36} className={className} />;
       default:
-        return <Image src="/icons/notStart.svg" alt="Not Started" width={20} height={20} className={className} />;
+        return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
     }
   };
 
@@ -130,12 +130,14 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     }
   };
 
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+
   useEffect(() => {
     setIsLoading(true);
     fetchTickets(true);
 
     // Smart refresh: only fetch data when there are actual updates
-    const smartRefreshInterval = setInterval(async () => {
+    intervalRef.current = setInterval(async () => {
       const hasUpdates = await checkForUpdates();
       if (hasUpdates) {
         console.log("📊 Updates detected, refreshing ticket data...");
@@ -144,8 +146,12 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     }, 30000); // Check for updates every 30 seconds, but only refresh if needed
 
     // Cleanup interval on component unmount
-    return () => clearInterval(smartRefreshInterval);
-  }, [lastUpdated]);
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []); // Empty dependency array - only run once on mount
 
   // Loading screen component
   if (isLoading) {
@@ -189,6 +195,8 @@ export default function TicketTable({ filters }: { filters: Filters }) {
               <th className="px-4 py-2 text-center">Create</th>
               <th className="px-4 py-2 text-center">Acknowledge</th>
               <th className="px-4 py-2 text-center">Investigate</th>
+              <th className="px-4 py-2 text-center">Engineer Plan</th>
+              <th className="px-4 py-2 text-center">Request Update</th>
               <th className="px-4 py-2 text-center">Waiting</th>
               <th className="px-4 py-2 text-center">Resolve</th>
               <th className="px-4 py-2 text-center">Completed</th>
@@ -222,11 +230,11 @@ export default function TicketTable({ filters }: { filters: Filters }) {
                       size="sm"
                     />
                   </td>
-                  {t.steps?.slice(0, 5).map((status: number, i: number) => (
+                  {t.steps?.slice(0, 7).map((status: number, i: number) => (
                     <td key={i} className="text-center">
                       {getStatusIcon(status)}
                     </td>
-                  )) || Array.from({length: 5}).map((_, i) => (
+                  )) || Array.from({length: 7}).map((_, i) => (
                     <td key={i} className="text-center">
                       {getStatusIcon(0)}
                     </td>

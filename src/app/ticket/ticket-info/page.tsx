@@ -127,7 +127,7 @@ export default function TicketInformationPage() {
     }
   };
 
-  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Waiting", "Resolve", "Complete"];
+  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
 
   if (loading) {
     return <TicketTimelineLoader />;
@@ -338,6 +338,8 @@ export default function TicketInformationPage() {
                                 const stepToStatusMap: { [key: string]: string[] } = {
                                   "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
                                   "Investigate": ["In Progress", "Investigating"],
+                                  "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+                                  "Request for Update": ["Request for update", "Pending Update", "Update Requested"],
                                   "Resolve": ["Resolved", "Resolving"],
                                   "Complete": ["Closed", "Done", "Completed"]
                                 };
@@ -388,6 +390,8 @@ export default function TicketInformationPage() {
                                 const stepToStatusMap: { [key: string]: string[] } = {
                                   "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
                                   "Investigate": ["In Progress", "Investigating"],
+                                  "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+                                  "Request for Update": ["Request for update", "Pending Update", "Update Requested"],
                                   "Waiting": ["Waiting"],
                                   "Resolve": ["Resolved", "Resolving"],
                                   "Complete": ["Closed", "Done", "Completed"]

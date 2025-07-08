@@ -82,22 +82,32 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
     'Investigating': 2,
     'In Review': 2,
     
-    // Step 3: Waiting
-    'Waiting': 3,
+    // Step 3: Engineer plan & update
+    'Engineer plan & update': 3,
+    'Engineering Planning': 3,
+    'Planning': 3,
     
-    // Step 4: Resolve
-    'Resolving': 4,
-    'Ready for Testing': 4,
-    'Testing': 4,
-    'Resolved': 4,  // Resolved should be step 4 (Resolve), not step 5
+    // Step 4: Request for update
+    'Request for update': 4,
+    'Pending Update': 4,
+    'Update Requested': 4,
     
-    // Step 5: Complete
-    'Closed': 5,
-    'Done': 5,
-    'Completed': 5
+    // Step 5: Waiting
+    'Waiting': 5,
+    
+    // Step 6: Resolve
+    'Resolving': 6,
+    'Ready for Testing': 6,
+    'Testing': 6,
+    'Resolved': 6,
+    
+    // Step 7: Complete
+    'Closed': 7,
+    'Done': 7,
+    'Completed': 7
   };
   
-  const steps = [0, 0, 0, 0, 0, 0]; // Initialize all steps as not started
+  const steps = [0, 0, 0, 0, 0, 0, 0, 0]; // Initialize all steps as not started (8 steps total)
   
   // Special case: if ticket is completed, mark all as done
   if (['Closed', 'Done', 'Completed'].includes(currentStatus)) {
@@ -135,32 +145,31 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
   steps[0] = 2;
   
   // Mark completed steps as green (2)
-  for (let i = 1; i <= finalStepIndex && i < 6; i++) {
+  for (let i = 1; i <= finalStepIndex && i < 8; i++) {
     steps[i] = 2;
   }
   
   // Mark the current step being worked on as orange (1)
   const statusToCurrentStep: { [key: string]: number } = {
-    'To Do': 0,                 // Currently: Create
-    'Open': 0,                  // Currently: Create
-    'New': 0,                   // Currently: Create
-    'Backlog': 0,               // Currently: Create
+    'OPEN TICKET': 0,           // Currently: Create
     'ASSIGN ENGINEER': 1,       // Currently: Acknowledge
     'ASSIGN ENGINNER': 1,       // Currently: Acknowledge
-    'In Progress': 2,           // Currently: Investigate
-    'Investigating': 2,         // Currently: Investigate
-    'Resolved': 4,              // Currently: Resolve
-    'Resolving': 4              // Currently: Resolve
+    'IN PROGRESS': 2,           // Currently: Investigate
+    'ENGINEER PLAN & UPDATE': 3,// Currently: Engineer plan & update
+    'REQUEST FOR UPDATE': 4,    // Currently: Request for update
+    'WAITING': 5,               // Currently: Waiting
+    'RESOLVED': 6               // Currently: Resolve
   };
   
-  const currentWorkingStep = statusToCurrentStep[currentStatus];
-  if (currentWorkingStep !== undefined && currentWorkingStep < 6) {
+  const currentWorkingStep = statusToCurrentStep[currentStatus.toUpperCase()];
+  console.log(`🔍 Debug - Current Status: "${currentStatus}" -> "${currentStatus.toUpperCase()}", Mapped to step: ${currentWorkingStep}`);
+  if (currentWorkingStep !== undefined && currentWorkingStep < 8) {
     steps[currentWorkingStep] = 1; // Mark current working step as in progress (orange)
   }
   
   // Special handling for waiting - mark waiting as in progress when currently waiting
   if (currentStatus === 'Waiting') {
-    steps[3] = 1; // Waiting step is in progress (orange)
+    steps[5] = 1; // Waiting step is in progress (orange)
   }
   
   return steps;
