@@ -97,7 +97,7 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
     'Completed': 5
   };
   
-  const steps = [2, 0, 0, 0, 0, 0]; // Create is always done
+  const steps = [0, 0, 0, 0, 0, 0]; // Initialize all steps as not started
   
   // Special case: if ticket is completed, mark all as done
   if (['Closed', 'Done', 'Completed'].includes(currentStatus)) {
@@ -131,14 +131,36 @@ function getStepStatusFromHistory(statusHistory: Array<{fromStatus: string | nul
   const currentStepIndex = statusToStep[currentStatus] || 0;
   const finalStepIndex = Math.max(maxStepReached, currentStepIndex);
   
-  // Fill steps array based on progression
+  // Mark create step as completed since ticket exists
+  steps[0] = 2;
+  
+  // Mark completed steps as green (2)
   for (let i = 1; i <= finalStepIndex && i < 6; i++) {
-    steps[i] = 2; // Mark all completed steps as done
+    steps[i] = 2;
   }
   
-  // If currently in Waiting status, mark Waiting step as in progress
+  // Mark the current step being worked on as orange (1)
+  const statusToCurrentStep: { [key: string]: number } = {
+    'To Do': 0,                 // Currently: Create
+    'Open': 0,                  // Currently: Create
+    'New': 0,                   // Currently: Create
+    'Backlog': 0,               // Currently: Create
+    'ASSIGN ENGINEER': 1,       // Currently: Acknowledge
+    'ASSIGN ENGINNER': 1,       // Currently: Acknowledge
+    'In Progress': 2,           // Currently: Investigate
+    'Investigating': 2,         // Currently: Investigate
+    'Resolved': 4,              // Currently: Resolve
+    'Resolving': 4              // Currently: Resolve
+  };
+  
+  const currentWorkingStep = statusToCurrentStep[currentStatus];
+  if (currentWorkingStep !== undefined && currentWorkingStep < 6) {
+    steps[currentWorkingStep] = 1; // Mark current working step as in progress (orange)
+  }
+  
+  // Special handling for waiting - mark waiting as in progress when currently waiting
   if (currentStatus === 'Waiting') {
-    steps[3] = 1; // Waiting step is in progress
+    steps[3] = 1; // Waiting step is in progress (orange)
   }
   
   return steps;
