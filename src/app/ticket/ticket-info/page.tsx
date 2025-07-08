@@ -70,11 +70,13 @@ export default function TicketInformationPage() {
     return date.toLocaleDateString('en-GB', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
+      timeZone: 'Asia/Bangkok'
     }) + ' ' + date.toLocaleTimeString('en-GB', {
       hour: '2-digit',
       minute: '2-digit',
-      hour12: true
+      hour12: true,
+      timeZone: 'Asia/Bangkok'
     });
   };
 
@@ -181,7 +183,8 @@ export default function TicketInformationPage() {
               </div>
               
               <div>
-                <EscalationBadge ticket={ticket} showLabel={true} size="md" />
+                <label className="text-darkWhite text-sm block mb-1">Escalation Level:</label>
+                <EscalationBadge ticket={ticket} showLabel={false} size="md" />
               </div>
             </div>
 
@@ -203,7 +206,9 @@ export default function TicketInformationPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-darkWhite text-sm block mb-1">Status:</label>
-                <p className="text-logoWhite font-medium">{ticket.currentStatus || ticket.status?.name || 'Unknown'}</p>
+                <p className="text-logoWhite font-medium">
+                  {ticket.currentStatus || (typeof ticket.status === 'string' ? ticket.status : ticket.status?.name) || 'Unknown'}
+                </p>
               </div>
               
               {/* Show waiting time if ticket has waiting data */}
@@ -225,14 +230,18 @@ export default function TicketInformationPage() {
               
               <div>
                 <label className="text-darkWhite text-sm block mb-1">Created:</label>
-                <p className="text-logoWhite font-medium">{ticket.timeline?.created ? formatDate(ticket.timeline.created) : (ticket.startDate ? formatDate(ticket.startDate) : 'Unknown')}</p>
+                <p className="text-logoWhite font-medium">{ticket.timeline?.created ? formatDate(ticket.timeline.created) : (ticket.created ? formatDate(ticket.created) : 'Unknown')}</p>
               </div>
               
               {ticket.assignee && (
                 <div>
                   <label className="text-darkWhite text-sm block mb-1">Assignee:</label>
-                  <p className="text-logoWhite font-medium">{ticket.assignee.displayName}</p>
-                  <p className="text-darkWhite text-xs">{ticket.assignee.emailAddress}</p>
+                  <p className="text-logoWhite font-medium">
+                    {typeof ticket.assignee === 'string' ? ticket.assignee : ticket.assignee.displayName}
+                  </p>
+                  {typeof ticket.assignee === 'object' && ticket.assignee.emailAddress && (
+                    <p className="text-darkWhite text-xs">{ticket.assignee.emailAddress}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -240,7 +249,7 @@ export default function TicketInformationPage() {
             <div className="space-y-4">
               <div>
                 <label className="text-darkWhite text-sm block mb-1">Last Update:</label>
-                <p className="text-logoWhite font-medium">{ticket.timeline?.updated ? formatDate(ticket.timeline.updated) : (ticket.startDate ? formatDate(ticket.startDate) : 'Unknown')}</p>
+                <p className="text-logoWhite font-medium">{ticket.timeline?.updated ? formatDate(ticket.timeline.updated) : (ticket.created ? formatDate(ticket.created) : 'Unknown')}</p>
               </div>
               
               {ticket.timeline?.resolved && (
@@ -253,8 +262,12 @@ export default function TicketInformationPage() {
               {ticket.reporter && (
                 <div>
                   <label className="text-darkWhite text-sm block mb-1">Reporter:</label>
-                  <p className="text-logoWhite font-medium">{ticket.reporter.displayName}</p>
-                  <p className="text-darkWhite text-xs">{ticket.reporter.emailAddress}</p>
+                  <p className="text-logoWhite font-medium">
+                    {typeof ticket.reporter === 'string' ? ticket.reporter : ticket.reporter.displayName}
+                  </p>
+                  {typeof ticket.reporter === 'object' && ticket.reporter.emailAddress && (
+                    <p className="text-darkWhite text-xs">{ticket.reporter.emailAddress}</p>
+                  )}
                 </div>
               )}
             </div>
@@ -300,18 +313,60 @@ export default function TicketInformationPage() {
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm whitespace-nowrap">Date:</span>
                           <span className="whitespace-nowrap">
-                            {ticket.statusHistory && ticket.statusHistory[index] && ticket.statusHistory[index].created
-                              ? formatDate(ticket.statusHistory[index].created) 
-                              : (isCompleted || isInProgress ? (ticket.startDate ? formatDate(ticket.startDate) : '-') : '-')
-                            }
+                            {(() => {
+                              // For Create Ticket step, always use creation time
+                              if (stepName === "Create Ticket") {
+                                return ticket.timeline?.created ? formatDate(ticket.timeline.created) : (ticket.created ? formatDate(ticket.created) : '-');
+                              }
+                              
+                              // Special handling for Waiting step
+                              if (stepName === "Waiting") {
+                                // Only show time if there was actually a waiting period
+                                if (ticket.statusHistory && ticket.statusHistory.some(h => h.toStatus === "Waiting")) {
+                                  const waitingHistory = ticket.statusHistory.find(h => h.toStatus === "Waiting");
+                                  if (waitingHistory && waitingHistory.changedAt) {
+                                    return formatDate(waitingHistory.changedAt);
+                                  }
+                                }
+                                // No waiting occurred, show dash
+                                return '-';
+                              }
+                              
+                              // For other steps, find the appropriate status change
+                              if (ticket.statusHistory && (isCompleted || isInProgress)) {
+                                // Map step names to status patterns
+                                const stepToStatusMap: { [key: string]: string[] } = {
+                                  "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
+                                  "Investigate": ["In Progress", "Investigating"],
+                                  "Resolve": ["Resolved", "Resolving"],
+                                  "Complete": ["Closed", "Done", "Completed"]
+                                };
+                                
+                                const statusPatterns = stepToStatusMap[stepName];
+                                if (statusPatterns) {
+                                  // Find the status history entry that matches this step
+                                  const relevantHistory = ticket.statusHistory.find(h => 
+                                    statusPatterns.some(pattern => h.toStatus === pattern)
+                                  );
+                                  
+                                  if (relevantHistory && relevantHistory.changedAt) {
+                                    return formatDate(relevantHistory.changedAt);
+                                  }
+                                }
+                                
+                                // Fallback to creation time if no specific status found
+                                return ticket.timeline?.created ? formatDate(ticket.timeline.created) : (ticket.created ? formatDate(ticket.created) : '-');
+                              }
+                              
+                              return '-';
+                            })()}
                           </span>
                         </div>
-                        {/* Only show author if step has been started */}
-                        {(isCompleted || isInProgress) && (
+                        {/* Always show author field, but only show waiting author if there was actual waiting */}
+                        {!(stepName === "Waiting" && !ticket.statusHistory?.some(h => h.toStatus === "Waiting")) && (
                           <div className="flex items-center gap-2">
                             <span className="text-xs sm:text-sm whitespace-nowrap">Updated by:</span>
                             <span className="whitespace-nowrap">
-                              {/* Find corresponding status history entry for this step */}
                               {(() => {
                                 // For Create Ticket step, use reporter (who created the ticket)
                                 if (stepName === "Create Ticket") {
@@ -324,17 +379,34 @@ export default function TicketInformationPage() {
                                   return (typeof ticket.reporter === 'string' ? ticket.reporter : ticket.reporter?.displayName) || 'Reporter';
                                 }
                                 
-                                // For other steps, find the most relevant status change author
-                                if (ticket.statusHistory && ticket.statusHistory.length > 0) {
-                                  // Use the latest status change author
-                                  const latestHistory = ticket.statusHistory[0]; // statusHistory is ordered desc
-                                  if (latestHistory?.authorName) {
-                                    return latestHistory.authorName;
+                                // For steps that haven't been reached yet, show dash
+                                if (!isCompleted && !isInProgress) {
+                                  return '-';
+                                }
+                                
+                                // For other steps, find the appropriate status change author
+                                const stepToStatusMap: { [key: string]: string[] } = {
+                                  "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
+                                  "Investigate": ["In Progress", "Investigating"],
+                                  "Waiting": ["Waiting"],
+                                  "Resolve": ["Resolved", "Resolving"],
+                                  "Complete": ["Closed", "Done", "Completed"]
+                                };
+                                
+                                const statusPatterns = stepToStatusMap[stepName];
+                                if (statusPatterns && ticket.statusHistory) {
+                                  // Find the status history entry that matches this step
+                                  const relevantHistory = ticket.statusHistory.find(h => 
+                                    statusPatterns.some(pattern => h.toStatus === pattern)
+                                  );
+                                  
+                                  if (relevantHistory?.authorName) {
+                                    return relevantHistory.authorName;
                                   }
                                 }
                                 
-                                // Fallback to assignee for non-create steps
-                                return (typeof ticket.assignee === 'string' ? ticket.assignee : ticket.assignee?.displayName) || 'Assignee';
+                                // Fallback to dash if no specific author found
+                                return '-';
                               })()}
                             </span>
                           </div>

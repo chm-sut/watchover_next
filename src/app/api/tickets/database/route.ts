@@ -183,7 +183,7 @@ export async function GET() {
         escalations: ticket.escalations,
         assignee: ticket.assignee,
         reporter: ticket.reporter,
-        created: ticket.createDate.toISOString().split('T')[0],
+        created: ticket.createDate.toISOString(),
         steps: getStepStatusFromHistory(ticket.statusHistory, ticket.status),
         statusHistory: ticket.statusHistory.map(history => ({
           fromStatus: history.fromStatus,
@@ -195,7 +195,13 @@ export async function GET() {
         // Add waiting time information
         totalWaitingHours: totalWaitingTime,
         isCurrentlyWaiting: ticket.status === 'Waiting',
-        waitingStartTime: ticket.waitingStartTime?.toISOString() || null
+        waitingStartTime: ticket.waitingStartTime?.toISOString() || null,
+        // Add timeline information
+        timeline: {
+          created: ticket.createDate.toISOString(),
+          updated: ticket.lastUpdated?.toISOString() || ticket.createDate.toISOString(),
+          resolved: null // Will be populated if we have resolution data
+        }
       };
     }));
 

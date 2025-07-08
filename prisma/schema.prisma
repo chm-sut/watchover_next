@@ -8,7 +8,7 @@ datasource db {
 }
 
 model JiraTicket {
-  ticketId          String   @id
+  ticketId          String          @id
   summary           String
   priority          String
   status            String
@@ -17,14 +17,13 @@ model JiraTicket {
   reporter          String?
   reporterEmail     String?
   customer          String?
-  description       String?  // Store ticket description
   createDate        DateTime
-  lastUpdated       DateTime @default(now())
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  totalWaitingHours Float    @default(0) // Total hours spent in Waiting status
-  waitingStartTime  DateTime? // When current waiting period started (null if not waiting)
-
+  lastUpdated       DateTime        @default(now())
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  description       String?
+  totalWaitingHours Float           @default(0)
+  waitingStartTime  DateTime?
   escalations       Escalation[]
   statusHistory     StatusHistory[]
 
@@ -33,14 +32,13 @@ model JiraTicket {
 
 model Escalation {
   ticketId      String
-  level         String      // 'Lv.1', 'Lv.2', etc.
-  scheduledTime DateTime    // When escalation should trigger
-  sentTime      DateTime?   // When notification was actually sent
-  isSent        Boolean     @default(false)
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  ticket        JiraTicket  @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
+  level         String
+  scheduledTime DateTime
+  sentTime      DateTime?
+  isSent        Boolean    @default(false)
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+  ticket        JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
 
   @@id([ticketId, level])
   @@map("escalations")
@@ -57,15 +55,14 @@ model Customer {
 }
 
 model StatusHistory {
-  id           String   @id @default(cuid())
-  ticketId     String
-  fromStatus   String?  // Previous status (null for initial status)
-  toStatus     String   // New status
-  changedAt    DateTime @default(now())
-  authorName   String?  // Name of person who made the change
-  authorEmail  String?  // Email of person who made the change
-  
-  ticket       JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
-  
+  id          String     @id @default(cuid())
+  ticketId    String
+  fromStatus  String?
+  toStatus    String
+  changedAt   DateTime   @default(now())
+  authorName  String?
+  authorEmail String?
+  ticket      JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
+
   @@map("status_history")
 }

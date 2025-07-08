@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
         // Update waiting time tracking
         await updateWaitingTime(issue.key, existingTicket.status, ticketData.status);
         
-        // If status change involves "Waiting", recalculate escalation times
+        // If status change involves Waiting, recalculate escalation times
         if (existingTicket.status === 'Waiting' || ticketData.status === 'Waiting') {
           console.log('🔄 Recalculating escalation times due to Waiting status change');
           const newEscalationTimes = await getEscalationTimes(ticketData.priority, existingTicket.createDate, issue.key);
