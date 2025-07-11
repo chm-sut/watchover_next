@@ -13,20 +13,6 @@ function formatDate(dateString: string): string {
   return `${day}-${month}-${year}`;
 }
 
-function formatDateTime(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString('en-GB', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    timeZone: 'Asia/Bangkok'
-  }) + ' ' + date.toLocaleTimeString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: true,
-    timeZone: 'Asia/Bangkok'
-  });
-}
 
 export default function TicketTable({ filters }: { filters: Filters }) {
   const router = useRouter();
@@ -36,6 +22,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<{stepName: string; date: string; author: string; status: string; x: number; y: number} | null>(null);
 
 
   const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
@@ -87,7 +74,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
       const createAuthor = ticket.statusHistory?.find(h => h.fromStatus === null)?.authorName || 
                           (typeof ticket.reporter === 'string' ? ticket.reporter : ticket.reporter?.displayName) || '-';
       return {
-        date: createDate ? formatDateTime(createDate) : '-',
+        date: createDate ? new Date(createDate).toLocaleDateString('en-GB') + ' ' + new Date(createDate).toLocaleTimeString('en-GB', {hour12: true}) : '-',
         author: createAuthor
       };
     }
@@ -97,7 +84,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
       const waitingHistory = ticket.statusHistory?.find(h => h.toStatus === "Waiting");
       if (waitingHistory && waitingHistory.changedAt) {
         return {
-          date: formatDateTime(waitingHistory.changedAt),
+          date: new Date(waitingHistory.changedAt).toLocaleDateString('en-GB') + ' ' + new Date(waitingHistory.changedAt).toLocaleTimeString('en-GB', {hour12: true}),
           author: waitingHistory.authorName || '-'
         };
       }
@@ -124,7 +111,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
 
     if (statusEntry && statusEntry.changedAt) {
       return {
-        date: formatDateTime(statusEntry.changedAt),
+        date: new Date(statusEntry.changedAt).toLocaleDateString('en-GB') + ' ' + new Date(statusEntry.changedAt).toLocaleTimeString('en-GB', {hour12: true}),
         author: statusEntry.authorName || '-'
       };
     }
@@ -134,13 +121,37 @@ export default function TicketTable({ filters }: { filters: Filters }) {
 
   const getStatusIcon = (status: number, ticket: Ticket, stepIndex: number) => {
     const className = "inline-block align-middle w-6 h-6";
-    const stepDetails = getStepDetails(ticket, stepIndex);
-    const stepName = stepNames[stepIndex];
     
     // Override status to grey if step never occurred
     const actualStatus = hasStepOccurred(ticket, stepIndex) ? status : 0;
     
-    const tooltipContent = `${stepName}\nDate: ${stepDetails.date}\nUpdated by: ${stepDetails.author}`;
+    const stepDetails = getStepDetails(ticket, stepIndex);
+    const stepName = stepNames[stepIndex];
+    
+    const getStatusText = (status: number) => {
+      switch (status) {
+        case 0: return "Not Started";
+        case 1: return "In Progress";  
+        case 2: return "Completed";
+        default: return "Not Started";
+      }
+    };
+    
+    const handleMouseEnter = (e: React.MouseEvent) => {
+      const rect = e.currentTarget.getBoundingClientRect();
+      setHoverInfo({
+        stepName,
+        date: stepDetails.date,
+        author: stepDetails.author,
+        status: getStatusText(actualStatus),
+        x: rect.left + rect.width / 2,
+        y: rect.top - 10
+      });
+    };
+    
+    const handleMouseLeave = () => {
+      setHoverInfo(null);
+    };
     
     const iconElement = (() => {
       switch (actualStatus) {
@@ -156,11 +167,12 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     })();
 
     return (
-      <div className="relative group inline-block w-6 h-6">
+      <div 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={handleMouseLeave}
+        className="inline-block cursor-pointer"
+      >
         {iconElement}
-        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-logoBlack backdrop-blur-sm bg-opacity-30 text-white text-xs rounded-lg whitespace-pre-line opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 min-w-max">
-          {tooltipContent}
-        </div>
       </div>
     );
   };
@@ -299,7 +311,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   }
 
   return (
-    <div className="w-full h-full flex flex-col rounded-md bg-black bg-opacity-10">
+    <div className="w-full h-full rounded-md bg-black bg-opacity-10 relative">
       {/* Smart refresh indicator */}
       {isRefreshing && (
         <div className="bg-green-600 bg-opacity-80 text-white text-xs px-3 py-1 text-center flex-shrink-0">
@@ -409,6 +421,35 @@ export default function TicketTable({ filters }: { filters: Filters }) {
           }}
         />
       </div>
+
+      {/* Tooltip that follows cursor */}
+      {hoverInfo && (
+        <div 
+          className="fixed z-50 bg-black bg-opacity-30 backdrop-blur-sm border border-gray-600 rounded-lg p-3 pointer-events-none transform -translate-x-1/2 -translate-y-full"
+          style={{
+            left: hoverInfo.x,
+            top: hoverInfo.y
+          }}
+        >
+          <div className="space-y-2">
+            <h4 className="text-logoWhite font-semibold text-sm">{hoverInfo.stepName}</h4>
+            <div className="space-y-1 text-xs text-gray-300">
+              <div className="flex items-center gap-2">
+                <span>🎯</span>
+                <span className="text-white">{hoverInfo.status}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>📅</span>
+                <span className="text-white">{hoverInfo.date}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span>👤</span>
+                <span className="text-white">{hoverInfo.author}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
