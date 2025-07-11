@@ -13,6 +13,21 @@ function formatDate(dateString: string): string {
   return `${day}-${month}-${year}`;
 }
 
+function formatDateTime(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('en-GB', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    timeZone: 'Asia/Bangkok'
+  }) + ' ' + date.toLocaleTimeString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
+    timeZone: 'Asia/Bangkok'
+  });
+}
+
 export default function TicketTable({ filters }: { filters: Filters }) {
   const router = useRouter();
   const [page, setPage] = useState(0);
@@ -62,22 +77,92 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     return hasStatusHistory || isCurrentStatus;
   };
 
+  const getStepDetails = (ticket: Ticket, stepIndex: number) => {
+    const stepName = stepNames[stepIndex];
+    if (!stepName) return { date: '-', author: '-' };
+
+    // For Create Ticket step, always use creation time
+    if (stepName === "Create Ticket") {
+      const createDate = ticket.timeline?.created || ticket.created;
+      const createAuthor = ticket.statusHistory?.find(h => h.fromStatus === null)?.authorName || 
+                          (typeof ticket.reporter === 'string' ? ticket.reporter : ticket.reporter?.displayName) || '-';
+      return {
+        date: createDate ? formatDateTime(createDate) : '-',
+        author: createAuthor
+      };
+    }
+
+    // Special handling for Waiting step
+    if (stepName === "Waiting") {
+      const waitingHistory = ticket.statusHistory?.find(h => h.toStatus === "Waiting");
+      if (waitingHistory && waitingHistory.changedAt) {
+        return {
+          date: formatDateTime(waitingHistory.changedAt),
+          author: waitingHistory.authorName || '-'
+        };
+      }
+      return { date: '-', author: '-' };
+    }
+
+    // For other steps, find the appropriate status change
+    const stepToStatusMap: { [key: string]: string[] } = {
+      "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
+      "Investigate": ["In Progress", "Investigating"],
+      "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+      "Request for Update": ["Request for update", "Pending Update", "Update Requested"],
+      "Resolve": ["Resolved", "Resolving"],
+      "Complete": ["Closed", "Done", "Completed"]
+    };
+
+    const statusPatterns = stepToStatusMap[stepName] || [];
+    const statusEntry = ticket.statusHistory?.find(h => 
+      statusPatterns.some(pattern => 
+        h.toStatus?.toLowerCase().includes(pattern.toLowerCase()) ||
+        pattern.toLowerCase().includes(h.toStatus?.toLowerCase() || '')
+      )
+    );
+
+    if (statusEntry && statusEntry.changedAt) {
+      return {
+        date: formatDateTime(statusEntry.changedAt),
+        author: statusEntry.authorName || '-'
+      };
+    }
+
+    return { date: '-', author: '-' };
+  };
+
   const getStatusIcon = (status: number, ticket: Ticket, stepIndex: number) => {
     const className = "inline-block align-middle w-6 h-6";
+    const stepDetails = getStepDetails(ticket, stepIndex);
+    const stepName = stepNames[stepIndex];
     
     // Override status to grey if step never occurred
     const actualStatus = hasStepOccurred(ticket, stepIndex) ? status : 0;
     
-    switch (actualStatus) {
-      case 0:
-        return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
-      case 1:
-        return <Image src="/icons/inProgress.svg" alt="In Progress" width={36} height={36} className={className} />;
-      case 2:
-        return <Image src="/icons/Done.svg" alt="Done" width={36} height={36} className={className} />;
-      default:
-        return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
-    }
+    const tooltipContent = `${stepName}\nDate: ${stepDetails.date}\nUpdated by: ${stepDetails.author}`;
+    
+    const iconElement = (() => {
+      switch (actualStatus) {
+        case 0:
+          return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
+        case 1:
+          return <Image src="/icons/inProgress.svg" alt="In Progress" width={36} height={36} className={className} />;
+        case 2:
+          return <Image src="/icons/Done.svg" alt="Done" width={36} height={36} className={className} />;
+        default:
+          return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
+      }
+    })();
+
+    return (
+      <div className="relative group inline-block w-6 h-6">
+        {iconElement}
+        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-logoBlack backdrop-blur-sm bg-opacity-30 text-white text-xs rounded-lg whitespace-pre-line opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50 min-w-max">
+          {tooltipContent}
+        </div>
+      </div>
+    );
   };
 
 
