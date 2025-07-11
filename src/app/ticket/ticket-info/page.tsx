@@ -348,6 +348,11 @@ function TicketInformationContent() {
                 const isCompleted = getStepStatus(index) === 2;
                 const isInProgress = getStepStatus(index) === 1;
                 
+                // Skip individual sub-process steps (3, 4, 5) as they'll be shown under Investigate
+                if (index >= 3 && index <= 5) {
+                  return null;
+                }
+                
                 return (
                   <div key={stepName} className="relative mb-6 sm:mb-8 last:mb-0">
                     {/* Timeline Icon */}
@@ -356,8 +361,9 @@ function TicketInformationContent() {
                     </div>
                     
                     {/* Step Card */}
-                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 sm:p-6 w-fit min-w-[200px] sm:min-w-[250px] ">
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 w-fit min-w-[200px] sm:min-w-[250px]">
                       <h4 className="text-logoWhite font-semibold text-base sm:text-lg mb-2 sm:mb-3 whitespace-nowrap">{stepName}</h4>
+                      
                       <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-darkWhite">
                         <div className="flex items-center gap-2">
                           <span className="text-xs sm:text-sm whitespace-nowrap">Date:</span>
@@ -464,6 +470,224 @@ function TicketInformationContent() {
                             </span>
                           </div>
                         )}
+                        
+                        {/* Show sub-processes for Investigate step */}
+                        {index === 2 && (() => {
+                          // Check if any sub-processes have occurred or are in progress
+                          const hasAnySubProcess = [3, 4, 5].some(subIndex => {
+                            const subStepName = stepNames[subIndex];
+                            
+                            // For sub-processes, require explicit status history evidence ONLY
+                            const stepToStatusMap: { [key: string]: string[] } = {
+                              "Engineer Plan & Update": ["engineer plan & update", "engineering planning", "planning"],
+                              "Request for Update": ["request for update", "pending update", "update requested"],
+                              "Waiting": ["waiting"]
+                            };
+                            
+                            const statusPatterns = stepToStatusMap[subStepName] || [];
+                            
+                            // Check for exact status history match (case insensitive)
+                            const hasExactStatusHistory = ticket.statusHistory?.some(h => {
+                              const toStatus = h.toStatus?.toLowerCase().trim() || '';
+                              return statusPatterns.some(pattern => 
+                                toStatus === pattern || toStatus.includes(pattern)
+                              );
+                            });
+                            
+                            // Check if there's actual date/time information for this sub-process
+                            const getSubProcessDate = () => {
+                              if (subStepName === "Waiting") {
+                                if (ticket.statusHistory && ticket.statusHistory.some(h => h.toStatus === "Waiting")) {
+                                  const waitingHistory = ticket.statusHistory.find(h => h.toStatus === "Waiting");
+                                  return waitingHistory?.changedAt;
+                                }
+                              } else {
+                                const relevantHistory = ticket.statusHistory?.find(h => 
+                                  statusPatterns.some(pattern => 
+                                    h.toStatus?.toLowerCase().trim() === pattern
+                                  )
+                                );
+                                return relevantHistory?.changedAt;
+                              }
+                              return null;
+                            };
+                            
+                            const subProcessDate = getSubProcessDate();
+                            
+                            // Special case for Waiting - also check waiting indicators
+                            if (subStepName === "Waiting") {
+                              const hasWaitingEvidence = hasExactStatusHistory || ticket.isCurrentlyWaiting || (ticket.totalWaitingHours && ticket.totalWaitingHours > 0);
+                              return hasWaitingEvidence && (subProcessDate || ticket.isCurrentlyWaiting || (ticket.totalWaitingHours && ticket.totalWaitingHours > 0));
+                            }
+                            
+                            // For Engineer Plan and Request Update, ONLY show if explicit status history exists AND has date
+                            return hasExactStatusHistory && subProcessDate;
+                          });
+                          
+                          // Only show the sub-processes section if there are any sub-processes
+                          if (!hasAnySubProcess) {
+                            return null;
+                          }
+                          
+                          return (
+                            <div className="mt-4 space-y-3">
+                              <div className="text-xs sm:text-sm text-gray-400 mb-3 border-b border-gray-600 pb-2">Investigation Sub-processes:</div>
+                              {[3, 4, 5].map((subIndex) => {
+                                const subStepName = stepNames[subIndex];
+                                const subCompleted = getStepStatus(subIndex) === 2;
+                                const subInProgress = getStepStatus(subIndex) === 1;
+                                
+                                // Only show sub-processes that have actually occurred with status history evidence
+                                
+                                // For sub-processes, require explicit status history evidence ONLY
+                                const stepToStatusMap: { [key: string]: string[] } = {
+                                  "Engineer Plan & Update": ["engineer plan & update", "engineering planning", "planning"],
+                                  "Request for Update": ["request for update", "pending update", "update requested"],
+                                  "Waiting": ["waiting"]
+                                };
+                                
+                                const statusPatterns = stepToStatusMap[subStepName] || [];
+                                
+                                // Check for exact status history match (case insensitive)
+                                const hasExactStatusHistory = ticket.statusHistory?.some(h => {
+                                  const toStatus = h.toStatus?.toLowerCase().trim() || '';
+                                  return statusPatterns.some(pattern => 
+                                    toStatus === pattern || toStatus.includes(pattern)
+                                  );
+                                });
+                                
+                                // Check if there's actual date/time information for this sub-process
+                                const getSubProcessDate = () => {
+                                  if (subStepName === "Waiting") {
+                                    if (ticket.statusHistory && ticket.statusHistory.some(h => h.toStatus === "Waiting")) {
+                                      const waitingHistory = ticket.statusHistory.find(h => h.toStatus === "Waiting");
+                                      return waitingHistory?.changedAt;
+                                    }
+                                  } else {
+                                    const relevantHistory = ticket.statusHistory?.find(h => 
+                                      statusPatterns.some(pattern => 
+                                        h.toStatus?.toLowerCase().trim() === pattern
+                                      )
+                                    );
+                                    return relevantHistory?.changedAt;
+                                  }
+                                  return null;
+                                };
+                                
+                                const subProcessDate = getSubProcessDate();
+                                
+                                // Special case for Waiting - also check waiting indicators
+                                if (subStepName === "Waiting") {
+                                  if (!hasExactStatusHistory && !ticket.isCurrentlyWaiting && (!ticket.totalWaitingHours || ticket.totalWaitingHours === 0)) {
+                                    return null;
+                                  }
+                                  // For waiting, if no date and no current waiting indicators, don't show
+                                  if (!subProcessDate && !ticket.isCurrentlyWaiting && (!ticket.totalWaitingHours || ticket.totalWaitingHours === 0)) {
+                                    return null;
+                                  }
+                                } else {
+                                  // For Engineer Plan and Request Update, ONLY show if explicit status history exists AND has date
+                                  if (!hasExactStatusHistory || !subProcessDate) {
+                                    return null;
+                                  }
+                                }
+                              
+                              return (
+                                <div key={subStepName} className="bg-white bg-opacity-5 rounded-2xl p-3 border border-white border-opacity-10">
+                                  <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-5 h-5 flex-shrink-0">
+                                      {getStatusIcon(subCompleted ? 2 : subInProgress ? 1 : 0)}
+                                    </div>
+                                    <span className={`font-medium ${subCompleted ? 'text-green-400' : subInProgress ? 'text-orange-400' : 'text-gray-400'}`}>
+                                      {subStepName}
+                                    </span>
+                                  </div>
+                                  
+                                  {/* Show waiting time for Waiting sub-process */}
+                                  {subIndex === 5 && ((ticket.totalWaitingHours && ticket.totalWaitingHours > 0) || ticket.isCurrentlyWaiting) && (
+                                    <div className="ml-8 mt-3">
+                                      <div className="px-3 py-2 bg-yellow-600 bg-opacity-60 text-yellow-100 text-xs font-medium rounded text-center">
+                                        ⏳ Currently waiting for {formatWaitingTime(ticket.totalWaitingHours || 0)}
+                                      </div>
+                                    </div>
+                                  )}
+                                  
+                                  {/* Show date and author for sub-process - same format as main step */}
+                                  <div className="ml-8 mt-3 space-y-1 text-xs text-darkWhite">
+                                    <div className="flex items-center gap-2">
+                                      <span className="whitespace-nowrap">Date:</span>
+                                      <span className="whitespace-nowrap">
+                                        {(() => {
+                                          if (subStepName === "Waiting") {
+                                            if (ticket.statusHistory && ticket.statusHistory.some(h => h.toStatus === "Waiting")) {
+                                              const waitingHistory = ticket.statusHistory.find(h => h.toStatus === "Waiting");
+                                              if (waitingHistory && waitingHistory.changedAt) {
+                                                return formatDate(waitingHistory.changedAt);
+                                              }
+                                            }
+                                          } else {
+                                            // For other sub-processes, find the appropriate status change
+                                            const stepToStatusMap: { [key: string]: string[] } = {
+                                              "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+                                              "Request for Update": ["Request for update", "Pending Update", "Update Requested"]
+                                            };
+                                            
+                                            const statusPatterns = stepToStatusMap[subStepName];
+                                            if (statusPatterns && ticket.statusHistory) {
+                                              const relevantHistory = ticket.statusHistory.find(h => 
+                                                statusPatterns.some(pattern => h.toStatus === pattern)
+                                              );
+                                              
+                                              if (relevantHistory && relevantHistory.changedAt) {
+                                                return formatDate(relevantHistory.changedAt);
+                                              }
+                                            }
+                                          }
+                                          return '-';
+                                        })()}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <span className="whitespace-nowrap">Updated by:</span>
+                                      <span className="whitespace-nowrap">
+                                        {(() => {
+                                          if (subStepName === "Waiting") {
+                                            if (ticket.statusHistory && ticket.statusHistory.some(h => h.toStatus === "Waiting")) {
+                                              const waitingHistory = ticket.statusHistory.find(h => h.toStatus === "Waiting");
+                                              if (waitingHistory && waitingHistory.authorName) {
+                                                return waitingHistory.authorName;
+                                              }
+                                            }
+                                          } else {
+                                            // For other sub-processes, find the appropriate status change
+                                            const stepToStatusMap: { [key: string]: string[] } = {
+                                              "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+                                              "Request for Update": ["Request for update", "Pending Update", "Update Requested"]
+                                            };
+                                            
+                                            const statusPatterns = stepToStatusMap[subStepName];
+                                            if (statusPatterns && ticket.statusHistory) {
+                                              const relevantHistory = ticket.statusHistory.find(h => 
+                                                statusPatterns.some(pattern => h.toStatus === pattern)
+                                              );
+                                              
+                                              if (relevantHistory && relevantHistory.authorName) {
+                                                return relevantHistory.authorName;
+                                              }
+                                            }
+                                          }
+                                          return '-';
+                                        })()}
+                                      </span>
+                                    </div>
+                                  </div>
+                                </div>
+                              );
+                              })}
+                            </div>
+                          );
+                        })()}
+                        
                         {/* Show waiting time details for Waiting step */}
                         {stepName === "Waiting" && ((ticket.totalWaitingHours && ticket.totalWaitingHours > 0) || ticket.isCurrentlyWaiting) && (
                           <>

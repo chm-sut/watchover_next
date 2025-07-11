@@ -21,11 +21,60 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   const [ticketData, setTicketData] = useState<Ticket[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [hoverInfo, setHoverInfo] = useState<{stepName: string; date: string; author: string; status: string; x: number; y: number} | null>(null);
 
 
   const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
+  
+  const getInvestigateSubProcess = (ticket: Ticket) => {
+    // Check which sub-process of Investigate is currently active
+    if (hasStepOccurred(ticket, 5) && (ticket.steps?.[5] || 0) > 0) { // Waiting
+      return { name: "Waiting", status: ticket.steps?.[5] || 0, stepIndex: 5 };
+    }
+    if (hasStepOccurred(ticket, 4) && (ticket.steps?.[4] || 0) > 0) { // Request Update
+      return { name: "Request Update", status: ticket.steps?.[4] || 0, stepIndex: 4 };
+    }
+    if (hasStepOccurred(ticket, 3) && (ticket.steps?.[3] || 0) > 0) { // Engineer Plan
+      return { name: "Engineer Plan", status: ticket.steps?.[3] || 0, stepIndex: 3 };
+    }
+    if (hasStepOccurred(ticket, 2) && (ticket.steps?.[2] || 0) > 0) { // Basic Investigate
+      return { name: "Investigate", status: ticket.steps?.[2] || 0, stepIndex: 2 };
+    }
+    return { name: "Investigate", status: 0, stepIndex: 2 };
+  };
+
+  const getSubProcessStatusText = (subProcess: { name: string; status: number }) => {
+    if (subProcess.status === 0) {
+      return "Not Started";
+    } else if (subProcess.status === 2) {
+      return "Done";
+    } else {
+      // Status 1 - in progress, show specific activity
+      switch (subProcess.name) {
+        case "Investigate":
+          return "Investigating";
+        case "Engineer Plan":
+          return "Engineer Planning";
+        case "Request Update":
+          return "Update Requesting";
+        case "Waiting":
+          return "Waiting";
+        default:
+          return "In Progress";
+      }
+    }
+  };
+
+  const getStepStatusText = (stepName: string, status: number) => {
+    if (status === 0) {
+      return "Not Started";
+    } else if (status === 2) {
+      return "Done";
+    } else {
+      // Status 1 - for all other columns, show "Processing"
+      return "Processing";
+    }
+  };
 
   const hasStepOccurred = (ticket: Ticket, stepIndex: number) => {
     const stepName = stepNames[stepIndex];
@@ -119,6 +168,33 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     return { date: '-', author: '-' };
   };
 
+  const getLatestStep = (ticket: Ticket) => {
+    // Check if all steps are completed
+    const allCompleted = ticket.steps?.every((s: number) => s === 2);
+    if (allCompleted) {
+      return { stepName: "Complete", status: 2, stepIndex: 7 };
+    }
+    
+    // Check Resolve
+    if (hasStepOccurred(ticket, 6) && (ticket.steps?.[6] || 0) > 0) {
+      return { stepName: "Resolve", status: ticket.steps?.[6] || 0, stepIndex: 6 };
+    }
+    
+    // Check Investigate sub-processes (prioritize latest)
+    const subProcess = getInvestigateSubProcess(ticket);
+    if (subProcess.status > 0) {
+      return { stepName: subProcess.name, status: subProcess.status, stepIndex: subProcess.stepIndex };
+    }
+    
+    // Check Acknowledge
+    if (hasStepOccurred(ticket, 1) && (ticket.steps?.[1] || 0) > 0) {
+      return { stepName: "Acknowledge", status: ticket.steps?.[1] || 0, stepIndex: 1 };
+    }
+    
+    // Default to Create Ticket
+    return { stepName: "Create Ticket", status: ticket.steps?.[0] || 1, stepIndex: 0 };
+  };
+
   const getStatusIcon = (status: number, ticket: Ticket, stepIndex: number) => {
     const className = "inline-block align-middle w-6 h-6";
     
@@ -139,6 +215,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     
     const handleMouseEnter = (e: React.MouseEvent) => {
       const rect = e.currentTarget.getBoundingClientRect();
+      
       setHoverInfo({
         stepName,
         date: stepDetails.date,
@@ -221,26 +298,6 @@ export default function TicketTable({ filters }: { filters: Filters }) {
 
   const logoWhite = "#F5F7FA";
 
-  const checkForUpdates = async () => {
-    try {
-      const res = await fetch("/api/tickets/check-updates");
-      if (!res.ok) return false;
-      
-      const data = await res.json();
-      if (!data.lastUpdated) return false;
-      
-      // If we haven't checked before, or there's a newer update
-      if (!lastUpdated || new Date(data.lastUpdated) > new Date(lastUpdated)) {
-        setLastUpdated(data.lastUpdated);
-        return true;
-      }
-      
-      return false;
-    } catch (error) {
-      console.error("Error checking for updates:", error);
-      return false;
-    }
-  };
 
   const fetchTickets = async (isInitialLoad = false) => {
     if (!isInitialLoad) setIsRefreshing(true);
@@ -276,14 +333,14 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     setIsLoading(true);
     fetchTickets(true);
 
-    // Smart refresh: only fetch data when there are actual updates
-    intervalRef.current = setInterval(async () => {
-      const hasUpdates = await checkForUpdates();
-      if (hasUpdates) {
-        console.log("📊 Updates detected, refreshing ticket data...");
-        fetchTickets();
-      }
-    }, 30000); // Check for updates every 30 seconds, but only refresh if needed
+    // Auto-refresh disabled
+    // intervalRef.current = setInterval(async () => {
+    //   const hasUpdates = await checkForUpdates();
+    //   if (hasUpdates) {
+    //     console.log("📊 Updates detected, refreshing ticket data...");
+    //     fetchTickets();
+    //   }
+    // }, 30000); // Check for updates every 30 seconds, but only refresh if needed
 
     // Cleanup interval on component unmount
     return () => {
@@ -319,8 +376,71 @@ export default function TicketTable({ filters }: { filters: Filters }) {
         </div>
       )}
       
-      {/* Table container with scroll */}
-      <div className="flex-1 overflow-auto">
+      {/* Mobile/Tablet Card View - visible on mobile and tablet screens */}
+      <div className="block lg:hidden flex-1 overflow-auto p-4 space-y-3">
+        {paginatedTickets.map((t, idx) => {
+          const latestStep = getLatestStep(t);
+          return (
+            <div 
+              key={idx}
+              className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 cursor-pointer hover:bg-opacity-20 transition-all"
+              onClick={() => router.push(`/ticket/ticket-info?ticketCode=${t.code}`)}
+            >
+              {/* Header with Code and Priority */}
+              <div className="flex justify-between items-start mb-3">
+                <div>
+                  <h3 className="text-white font-semibold text-lg">{t.code}</h3>
+                  <p className="text-gray-300 text-sm truncate max-w-[200px]">{t.name}</p>
+                </div>
+                <PriorityBadge priority={t.priority?.name || 'LOW'} />
+              </div>
+              
+              {/* Latest Step Status */}
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-8 h-8">
+                  {getStatusIcon(latestStep.status, t, latestStep.stepIndex)}
+                </div>
+                <div>
+                  <p className="text-white font-medium">{latestStep.stepName}</p>
+                  <p className="text-gray-400 text-xs">
+                    {(() => {
+                      // For mobile, if it's an investigate step, show the detailed status
+                      if ([2, 3, 4, 5].includes(latestStep.stepIndex)) {
+                        const subProcess = getInvestigateSubProcess(t);
+                        return getSubProcessStatusText(subProcess);
+                      }
+                      // For other steps, use the general status text function
+                      return getStepStatusText(latestStep.stepName, latestStep.status);
+                    })()}
+                  </p>
+                </div>
+              </div>
+              
+              {/* Customer and Date */}
+              <div className="flex justify-between items-center text-sm">
+                <span className="text-gray-300">{t.customer}</span>
+                <span className="text-gray-400">
+                  {t.startDate ? formatDate(t.startDate) : (t.created ? formatDate(t.created) : 'Unknown')}
+                </span>
+              </div>
+              
+              {/* Escalation Badge */}
+              <div className="mt-3 flex items-center gap-2">
+                <EscalationBadge ticket={t} size="sm" />
+                <EscalationNotificationButton 
+                  ticket={t} 
+                  escalationLevel={t.escalationLevel || getEscalationLevelForFilter(t)} 
+                  size="sm"
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+      
+
+      {/* Desktop Table View - visible on large screens */}
+      <div className="hidden lg:block flex-1 overflow-auto">
         <div className="min-w-[900px]">
           <table className="w-full text-left text-sm text-white table-auto font-body">
           <thead className="sticky top-0 z-10 bg-logoBlack bg-opacity-10 backdrop-blur-md border-b border-gray-600">
@@ -337,11 +457,8 @@ export default function TicketTable({ filters }: { filters: Filters }) {
               <th className="px-4 py-2 text-center">Create</th>
               <th className="px-4 py-2 text-center">Acknowledge</th>
               <th className="px-4 py-2 text-center">Investigate</th>
-              <th className="px-4 py-2 text-center">Engineer Plan</th>
-              <th className="px-4 py-2 text-center">Request Update</th>
-              <th className="px-4 py-2 text-center">Waiting</th>
               <th className="px-4 py-2 text-center">Resolve</th>
-              <th className="px-4 py-2 text-center">Completed</th>
+              <th className="px-4 py-2 text-center">Complete</th>
             </tr>
           </thead>
           <tbody>
@@ -372,16 +489,57 @@ export default function TicketTable({ filters }: { filters: Filters }) {
                   <td className="px-4 py-2 whitespace-nowrap">
                     {t.startDate ? formatDate(t.startDate) : (t.created ? formatDate(t.created) : 'Unknown')}
                   </td>
-                  {t.steps?.slice(0, 7).map((status: number, i: number) => (
-                    <td key={i} className="text-center">
-                      {getStatusIcon(status, t, i)}
-                    </td>
-                  )) || Array.from({length: 7}).map((_, i) => (
-                    <td key={i} className="text-center">
-                      {getStatusIcon(0, t, i)}
-                    </td>
-                  ))}
-                  <td className="text-center">
+                  {/* Create Ticket */}
+                  <td className="text-center px-4 py-2">
+                    {getStatusIcon(t.steps?.[0] || 0, t, 0)}
+                  </td>
+                  
+                  {/* Acknowledge */}
+                  <td className="text-center px-4 py-2">
+                    {getStatusIcon(t.steps?.[1] || 0, t, 1)}
+                  </td>
+                  
+                  {/* Investigate (show text only when in progress) */}
+                  <td className="text-center px-4 py-2">
+                    {(() => {
+                      const subProcess = getInvestigateSubProcess(t);
+                      
+                      // Only show text when status is 1 (in progress/orange)
+                      if (subProcess.status === 1) {
+                        const displayName = (() => {
+                          switch (subProcess.name) {
+                            case "Investigate": return "Investigating";
+                            case "Engineer Plan": return "Engineer Planning";
+                            case "Request Update": return "Update Requesting";
+                            case "Waiting": return "Waiting";
+                            default: return subProcess.name;
+                          }
+                        })();
+                        
+                        return (
+                          <div className="flex items-center justify-center gap-1">
+                            <div className="flex-shrink-0">
+                              {getStatusIcon(subProcess.status, t, subProcess.stepIndex)}
+                            </div>
+                            <span className="text-xs text-orange-400 font-medium">
+                              {displayName}
+                            </span>
+                          </div>
+                        );
+                      } else {
+                        // Just show icon for not started (grey) or completed (green)
+                        return getStatusIcon(subProcess.status, t, subProcess.stepIndex);
+                      }
+                    })()}
+                  </td>
+                  
+                  {/* Resolve */}
+                  <td className="text-center px-4 py-2">
+                    {getStatusIcon(t.steps?.[6] || 0, t, 6)}
+                  </td>
+                  
+                  {/* Complete */}
+                  <td className="text-center px-4 py-2">
                     {getStatusIcon(allCompleted ? 2 : 0, t, 7)}
                   </td>
                 </tr>
@@ -392,7 +550,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
         </div>
       </div>
 
-      {/* Pagination - fixed at bottom */}
+      {/* Pagination - fixed at bottom for both mobile and desktop */}
       <div className="flex justify-end border-t border-gray-600 flex-shrink-0">
         <TablePagination
           component="div"
