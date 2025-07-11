@@ -311,7 +311,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   }
 
   return (
-    <div className="w-full h-full rounded-md bg-black bg-opacity-10 relative">
+    <div className="w-full h-full flex flex-col rounded-md bg-black bg-opacity-10 relative">
       {/* Smart refresh indicator */}
       {isRefreshing && (
         <div className="bg-green-600 bg-opacity-80 text-white text-xs px-3 py-1 text-center flex-shrink-0">
