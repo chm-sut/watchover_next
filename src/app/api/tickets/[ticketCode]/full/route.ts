@@ -197,7 +197,7 @@ export async function GET(
     // Map status changes to timeline steps
     const currentStatus = issue.fields.status?.name || "Unknown";
     console.log(`🔍 COS-1715 Debug - Current Status: "${currentStatus}"`);
-    console.log(`🔍 COS-1715 Debug - Status History:`, statusChanges.map(s => s.toStatus));
+    console.log(`🔍 COS-1715 Debug - Status History:`, statusChanges.map((s: Record<string, unknown>) => s.toStatus));
     
     const steps = mapStatusToSteps(statusChanges, currentStatus);
     console.log(`🔍 COS-1715 Debug - Mapped Steps:`, steps);

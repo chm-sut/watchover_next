@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, Urbanist } from "next/font/google";
 import "./globals.css";
 import SideBar from "@/components/Sidebar";
+import { AuthProvider } from "@/components/AuthProvider";
 
 const inter = Inter({
   variable: "--font-inter",
@@ -31,9 +32,11 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${urbanist.variable} font-body antialiased`}
       >
-        <SideBar>
-          {children}
-        </SideBar>
+        <AuthProvider>
+          <SideBar>
+            {children}
+          </SideBar>
+        </AuthProvider>
       </body>
     </html>
   );

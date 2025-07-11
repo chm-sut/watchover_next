@@ -1,12 +1,12 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import TicketTimelineLoader from "@/components/TicketTimelineLoader";
 import EscalationBadge from "@/components/EscalationBadge";
 import type { Ticket } from "@/types";
 
-export default function TicketInformationPage() {
+function TicketInformationContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const ticketCode = searchParams.get('ticketCode');
@@ -23,7 +23,7 @@ export default function TicketInformationPage() {
         })
         .then((data) => {
           // Find the specific ticket by code
-          const foundTicket = data.find((t: any) => t.code === ticketCode);
+          const foundTicket = data.find((t: Record<string, unknown>) => t.code === ticketCode);
           if (foundTicket) {
             setTicket(foundTicket);
             setLoading(false);
@@ -108,9 +108,53 @@ export default function TicketInformationPage() {
   };
 
 
+  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
+
+  const hasStepOccurred = (stepIndex: number) => {
+    if (!ticket) return false;
+    
+    const stepName = stepNames[stepIndex];
+    
+    // Create Ticket always occurs
+    if (stepName === "Create Ticket") return true;
+    
+    // Check status history for step occurrence
+    const stepToStatusMap: { [key: string]: string[] } = {
+      "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
+      "Investigate": ["In Progress", "Investigating"],
+      "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+      "Request for Update": ["Request for update", "Pending Update", "Update Requested"],
+      "Waiting": ["Waiting"],
+      "Resolve": ["Resolved", "Resolving"],
+      "Complete": ["Closed", "Done", "Completed"]
+    };
+
+    const statusPatterns = stepToStatusMap[stepName] || [];
+    const hasStatusHistory = ticket.statusHistory?.some(h => 
+      statusPatterns.some(pattern => 
+        h.toStatus?.toLowerCase() === pattern.toLowerCase()
+      )
+    );
+
+    // Also check current status for in-progress steps
+    const isCurrentStatus = statusPatterns.some(pattern =>
+      ticket.status?.name?.toLowerCase() === pattern.toLowerCase()
+    );
+
+    // Special check for Waiting
+    if (stepName === "Waiting") {
+      return hasStatusHistory || ticket.status?.name === "Waiting" || ticket.isCurrentlyWaiting;
+    }
+
+    return hasStatusHistory || isCurrentStatus;
+  };
+
   const getStepStatus = (stepIndex: number) => {
     if (!ticket || !ticket.steps || !Array.isArray(ticket.steps)) return 0;
-    return ticket.steps[stepIndex] || 0;
+    const originalStatus = ticket.steps[stepIndex] || 0;
+    
+    // Override to grey if step never occurred
+    return hasStepOccurred(stepIndex) ? originalStatus : 0;
   };
 
   const getStatusIcon = (status: number) => {
@@ -126,8 +170,6 @@ export default function TicketInformationPage() {
         return <img src="/icons/notStart.svg" alt="Not Started" className={iconClass} />;
     }
   };
-
-  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
 
   if (loading) {
     return <TicketTimelineLoader />;
@@ -155,10 +197,17 @@ export default function TicketInformationPage() {
                 >
                   ← Back
                 </button>
-                <div className="flex items-center gap-3">
-                  <span className="text-logoWhite font-heading text-base font-semibold px-3 py-1 bg-white bg-opacity-20 rounded">
+                <div className="flex items-center gap-3 flex-1">
+                  <button
+                    onClick={() => window.open(`https://cloud-hm.atlassian.net/browse/${ticket.code}`, '_blank')}
+                    className="text-logoWhite font-heading text-base font-semibold px-3 py-1 bg-white bg-opacity-20 hover:bg-logoBlue hover:text-logoWhite rounded transition-colors cursor-pointer flex items-center gap-2"
+                    title="Open in JIRA"
+                  >
                     {ticket.code}
-                  </span>
+                    <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                    </svg>
+                  </button>
                   <span className="text-logoWhite font-heading text-h6 sm:text-h5 font-medium">
                     {ticket.name}
                   </span>
@@ -441,5 +490,13 @@ export default function TicketInformationPage() {
             </div>
           </div>
     </div>
+  );
+}
+
+export default function TicketInformationPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TicketInformationContent />
+    </Suspense>
   );
 }

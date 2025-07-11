@@ -16,16 +16,24 @@ export default function TicketLifecyclePage() {
   });
 
   const [filtersVisible, setFiltersVisible] = useState(false);
+  const [viewMode, setViewMode] = useState<'full' | 'compact'>('full');
 
   return (
     <>
-      {/* Toggle FiltersBar Visibility */}
-      <div className="flex justify-start mb-2">
+      {/* Toggle FiltersBar Visibility and View Mode */}
+      <div className="flex justify-between mb-2">
         <button
           className="text-sm text-white bg-logoBlack bg-opacity-70 px-3 py-1 rounded hover:bg-logoBlue"
           onClick={() => setFiltersVisible(!filtersVisible)}
         >
           {filtersVisible ? "Hide Filters" : "Show Filters"}
+        </button>
+        
+        <button
+          className="text-sm text-white bg-logoBlack bg-opacity-70 px-3 py-1 rounded hover:bg-logoBlue"
+          onClick={() => setViewMode(viewMode === 'full' ? 'compact' : 'full')}
+        >
+          {viewMode === 'full' ? "Compact View" : "Full View"}
         </button>
       </div>
 

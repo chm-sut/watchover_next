@@ -23,9 +23,52 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
 
 
-  const getStatusIcon = (status: number) => {
+  const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
+
+  const hasStepOccurred = (ticket: Ticket, stepIndex: number) => {
+    const stepName = stepNames[stepIndex];
+    
+    // Create Ticket always occurs
+    if (stepName === "Create Ticket") return true;
+    
+    // Check status history for step occurrence
+    const stepToStatusMap: { [key: string]: string[] } = {
+      "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
+      "Investigate": ["In Progress", "Investigating"],
+      "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
+      "Request for Update": ["Request for update", "Pending Update", "Update Requested"],
+      "Waiting": ["Waiting"],
+      "Resolve": ["Resolved", "Resolving"],
+      "Complete": ["Closed", "Done", "Completed"]
+    };
+
+    const statusPatterns = stepToStatusMap[stepName] || [];
+    const hasStatusHistory = ticket.statusHistory?.some(h => 
+      statusPatterns.some(pattern => 
+        h.toStatus?.toLowerCase() === pattern.toLowerCase()
+      )
+    );
+
+    // Also check current status for in-progress steps
+    const isCurrentStatus = statusPatterns.some(pattern =>
+      ticket.status?.name?.toLowerCase() === pattern.toLowerCase()
+    );
+
+    // Special check for Waiting
+    if (stepName === "Waiting") {
+      return hasStatusHistory || ticket.status?.name === "Waiting" || ticket.isCurrentlyWaiting;
+    }
+
+    return hasStatusHistory || isCurrentStatus;
+  };
+
+  const getStatusIcon = (status: number, ticket: Ticket, stepIndex: number) => {
     const className = "inline-block align-middle w-6 h-6";
-    switch (status) {
+    
+    // Override status to grey if step never occurred
+    const actualStatus = hasStepOccurred(ticket, stepIndex) ? status : 0;
+    
+    switch (actualStatus) {
       case 0:
         return <Image src="/icons/notStart.svg" alt="Not Started" width={36} height={36} className={className} />;
       case 1:
@@ -171,15 +214,18 @@ export default function TicketTable({ filters }: { filters: Filters }) {
   }
 
   return (
-    <div className="w-full overflow-x-auto h-full rounded-md bg-black bg-opacity-10">
-      <div className="min-w-[900px]">
-        {/* Smart refresh indicator */}
-        {isRefreshing && (
-          <div className="bg-green-600 bg-opacity-80 text-white text-xs px-3 py-1 text-center">
-            📊 New updates detected - refreshing data...
-          </div>
-        )}
-        <table className="w-full text-left text-sm text-white table-auto font-body">
+    <div className="w-full h-full flex flex-col rounded-md bg-black bg-opacity-10">
+      {/* Smart refresh indicator */}
+      {isRefreshing && (
+        <div className="bg-green-600 bg-opacity-80 text-white text-xs px-3 py-1 text-center flex-shrink-0">
+          📊 New updates detected - refreshing data...
+        </div>
+      )}
+      
+      {/* Table container with scroll */}
+      <div className="flex-1 overflow-auto">
+        <div className="min-w-[900px]">
+          <table className="w-full text-left text-sm text-white table-auto font-body">
           <thead className="sticky top-0 z-10 bg-logoBlack bg-opacity-10 backdrop-blur-md border-b border-gray-600">
             <tr>
               <th className="px-4 py-2 whitespace-nowrap">
@@ -191,7 +237,6 @@ export default function TicketTable({ filters }: { filters: Filters }) {
               <th className="px-4 py-2 whitespace-nowrap">Escalation Lv.</th>
               <th className="px-4 py-2">Customer</th>
               <th className="px-4 py-2 whitespace-nowrap">Start Date</th>
-              <th className="px-4 py-2 text-center">Notify</th>
               <th className="px-4 py-2 text-center">Create</th>
               <th className="px-4 py-2 text-center">Acknowledge</th>
               <th className="px-4 py-2 text-center">Investigate</th>
@@ -216,40 +261,42 @@ export default function TicketTable({ filters }: { filters: Filters }) {
                   <td className="px-4 py-2">
                     <PriorityBadge priority={t.priority?.name || 'LOW'} />
                   </td>
-                  <td className="px-4 py-2">
-                    <EscalationBadge ticket={t} size="sm" />
+                  <td className="px-4 py-2" onClick={(e) => e.stopPropagation()}>
+                    <div className="flex items-center gap-2">
+                      <EscalationBadge ticket={t} size="sm" />
+                      <EscalationNotificationButton 
+                        ticket={t} 
+                        escalationLevel={t.escalationLevel || getEscalationLevelForFilter(t)} 
+                        size="sm"
+                      />
+                    </div>
                   </td>
                   <td className="px-4 py-2">{t.customer}</td>
                   <td className="px-4 py-2 whitespace-nowrap">
                     {t.startDate ? formatDate(t.startDate) : (t.created ? formatDate(t.created) : 'Unknown')}
                   </td>
-                  <td className="px-4 py-2 text-center" onClick={(e) => e.stopPropagation()}>
-                    <EscalationNotificationButton 
-                      ticket={t} 
-                      escalationLevel={t.escalationLevel || getEscalationLevelForFilter(t)} 
-                      size="sm"
-                    />
-                  </td>
                   {t.steps?.slice(0, 7).map((status: number, i: number) => (
                     <td key={i} className="text-center">
-                      {getStatusIcon(status)}
+                      {getStatusIcon(status, t, i)}
                     </td>
                   )) || Array.from({length: 7}).map((_, i) => (
                     <td key={i} className="text-center">
-                      {getStatusIcon(0)}
+                      {getStatusIcon(0, t, i)}
                     </td>
                   ))}
                   <td className="text-center">
-                    {getStatusIcon(allCompleted ? 2 : 0)}
+                    {getStatusIcon(allCompleted ? 2 : 0, t, 7)}
                   </td>
                 </tr>
               );
             })}
           </tbody>
-        </table>
+          </table>
+        </div>
       </div>
 
-      <div className="flex justify-end">
+      {/* Pagination - fixed at bottom */}
+      <div className="flex justify-end border-t border-gray-600 flex-shrink-0">
         <TablePagination
           component="div"
           count={filteredTickets.length}

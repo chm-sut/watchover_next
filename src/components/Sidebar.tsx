@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { BarChart3, Home, MessageCircle, Cloud, Ticket } from 'lucide-react';
 import { useRouter, usePathname } from 'next/navigation';
-import { getCurrentUser } from '@/utils/mockAuth';
+import { useAuth } from '@/components/AuthProvider';
 
 const menuItems = [
   {
@@ -48,7 +48,7 @@ interface SideBarProps {
 export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const user = getCurrentUser();
+  const { user, logout } = useAuth();
   
   // Internal state for sidebar if not controlled externally
   const [internalSidebarOpen, setInternalSidebarOpen] = useState(false);
@@ -84,7 +84,7 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
   // If used as layout (with children), render full layout
   if (children) {
     // Don't show sidebar layout on login page
-    if (pathname === '/') {
+    if (pathname === '/' || pathname === '/login') {
       return <>{children}</>;
     }
 
@@ -103,9 +103,9 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
           <div className="flex justify-between items-center mb-6 overflow-hidden">
             <h1 className="font-heading text-h5 sm:text-h4 text-logoWhite truncate">{getPageTitle()}</h1>
             <div className="flex sm:flex items-center gap-2 flex-shrink-0">
-              <span className="text-logoWhite hidden sm:inline">{user.name}</span>
+              <span className="text-logoWhite hidden sm:inline">{user?.displayName || user?.name || user?.email}</span>
               <button 
-                onClick={() => console.log('Logout clicked')}
+                onClick={logout}
                 className="text-logoWhite hover:text-logoRed transition-colors"
                 title="Logout"
               >
