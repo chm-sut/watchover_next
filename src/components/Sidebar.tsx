@@ -77,6 +77,10 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
       case '/ticket/ticket-info':
         return 'Ticket Lifecycle';
       default:
+        // Handle dynamic routes
+        if (pathname.startsWith('/live-conversation/')) {
+          return 'Live Conversation';
+        }
         return 'WatchOver';
     }
   };

@@ -184,7 +184,7 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
         </table>
       </div>
 
-      <div className="flex justify-end">
+      <div className="flex justify-end border-t border-gray-600 flex-shrink-0">
         <TablePagination
           component="div"
           count={filteredComments.length}

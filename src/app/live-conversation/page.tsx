@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ConversationTable from "@/components/ConversationTable";
 
 export default function LiveConversationPage() {
@@ -14,6 +14,10 @@ export default function LiveConversationPage() {
   });
 
   const [filtersVisible, setFiltersVisible] = useState(false);
+
+  useEffect(() => {
+    document.title = "Live Conversation";
+  }, []);
 
   return (
     <>
