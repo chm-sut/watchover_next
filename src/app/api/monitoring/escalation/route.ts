@@ -28,8 +28,13 @@ export async function POST() {
       // Get previous escalation from our tracking map (for immediate comparison)
       const previousEscalation = escalationHistory.get(ticketId) || "None";
 
+      // Skip notifications for paused tickets
+      if (currentEscalation === 'Paused') {
+        continue;
+      }
+
       // Check if escalation level increased
-      const escalationOrder = { 'None': 0, 'Lv.1': 1, 'Lv.2': 2 };
+      const escalationOrder = { 'None': 0, 'Lv.1': 1, 'Lv.2': 2, 'Paused': -1 };
       const currentOrder = escalationOrder[currentEscalation as keyof typeof escalationOrder] || 0;
       const previousOrder = escalationOrder[previousEscalation as keyof typeof escalationOrder] || 0;
 

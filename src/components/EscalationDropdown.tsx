@@ -13,6 +13,7 @@ const escalationLevels = [
   { value: "None", label: "None" },
   { value: "Lv.1", label: "Lv.1" },
   { value: "Lv.2", label: "Lv.2" },
+  { value: "Paused", label: "Paused" },
 ];
 
 export default function EscalationDropdown({ value, onChange }: EscalationDropdownProps) {

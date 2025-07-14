@@ -418,7 +418,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
               {/* Header with Code and Priority */}
               <div className="flex justify-between items-start mb-3">
                 <div>
-                  <h3 className="text-white font-semibold text-lg">{t.code}</h3>
+                  <h3 className="text-white font-semibold text-lg font-mono">{t.code}</h3>
                   <p className="text-gray-300 text-sm truncate max-w-[200px]">{t.name}</p>
                 </div>
                 <PriorityBadge priority={t.priority?.name || 'LOW'} />

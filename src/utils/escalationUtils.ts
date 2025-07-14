@@ -78,6 +78,28 @@ export async function getEscalationLevelServer(ticket: Ticket): Promise<string> 
     currentEscalation = "Lv.1";
   }
 
+  // Check if ticket is in any waiting-related status
+  const isWaitingStatus = (status: string) => {
+    const waitingStatuses = [
+      'Waiting',
+      'Waiting for Customer', 
+      'Waiting for customer',
+      'Waiting Customer',
+      'Customer Waiting',
+      'Pending Customer',
+      'Pending',
+      'On Hold'
+    ];
+    return waitingStatuses.some(waitingStatus => 
+      status.toLowerCase().includes(waitingStatus.toLowerCase())
+    );
+  };
+
+  // If ticket is currently in any waiting status, escalation is paused
+  if (ticket.status?.name && isWaitingStatus(ticket.status.name)) {
+    return "Paused";
+  }
+
   try {
     // Get previously stored escalation level from database
     const existingRecord = await prisma.escalation.findFirst({

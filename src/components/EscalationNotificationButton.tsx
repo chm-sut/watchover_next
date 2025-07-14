@@ -45,8 +45,8 @@ export default function EscalationNotificationButton({
     }
   };
 
-  // Only show button for escalated tickets
-  if (escalationLevel === 'None') {
+  // Only show button for escalated tickets (not None or Paused)
+  if (escalationLevel === 'None' || escalationLevel === 'Paused') {
     return null;
   }
 

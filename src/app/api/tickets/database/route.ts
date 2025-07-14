@@ -36,6 +36,28 @@ async function calculateEscalationLevel(escalations: Array<{level: string, sched
     return 'None';
   }
   
+  // Check if ticket is in any waiting-related status
+  const isWaitingStatus = (status: string) => {
+    const waitingStatuses = [
+      'Waiting',
+      'Waiting for Customer', 
+      'Waiting for customer',
+      'Waiting Customer',
+      'Customer Waiting',
+      'Pending Customer',
+      'Pending',
+      'On Hold'
+    ];
+    return waitingStatuses.some(waitingStatus => 
+      status.toLowerCase().includes(waitingStatus.toLowerCase())
+    );
+  };
+
+  // If ticket is currently in any waiting status, escalation is paused
+  if (isWaitingStatus(status)) {
+    return 'Paused';
+  }
+  
   // Calculate waiting time to adjust escalation schedule
   const waitingTime = await getWaitingTime(ticketId);
   

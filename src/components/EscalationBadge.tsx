@@ -16,14 +16,38 @@ export default function EscalationBadge({ ticket, size = "md", showLabel = false
     };
     const base = `${baseSizes[size]} rounded-full font-semibold`;
     
+    // Check if ticket is in any waiting-related status
+    const isWaitingStatus = (status: string) => {
+      const waitingStatuses = [
+        'Waiting',
+        'Waiting for Customer', 
+        'Waiting for customer',
+        'Waiting Customer',
+        'Customer Waiting',
+        'Pending Customer',
+        'Pending',
+        'On Hold'
+      ];
+      return waitingStatuses.some(waitingStatus => 
+        status.toLowerCase().includes(waitingStatus.toLowerCase())
+      );
+    };
+
+    // If ticket is waiting, override database value and show "Paused"
+    if (ticket.status?.name && isWaitingStatus(ticket.status.name)) {
+      return { level: "Paused", className: `${base} bg-yellow-600 text-yellow-100` };
+    }
+    
     // Use escalation level from database if available, otherwise calculate
-    const escalationLevel = ticket.escalationLevel || "None";
+    const escalationLevel = ticket.escalationLevel || getEscalationLevelForFilter(ticket);
     
     switch (escalationLevel) {
       case "Lv.2":
         return { level: "Lv.2", className: `${base} bg-darkRed text-logoWhite` };
       case "Lv.1":
         return { level: "Lv.1", className: `${base} bg-lightOrange text-darkRed` };
+      case "Paused":
+        return { level: "Paused", className: `${base} bg-yellow-600 text-yellow-100` };
       case "None":
         return { level: "None", className: `${base} bg-logoWhite text-logoBlack` };
       default:
@@ -47,6 +71,28 @@ export default function EscalationBadge({ ticket, size = "md", showLabel = false
 
 // Export the escalation logic for filtering purposes
 export const getEscalationLevelForFilter = (ticket: Ticket): string => {
+  // Check if ticket is in any waiting-related status
+  const isWaitingStatus = (status: string) => {
+    const waitingStatuses = [
+      'Waiting',
+      'Waiting for Customer', 
+      'Waiting for customer',
+      'Waiting Customer',
+      'Customer Waiting',
+      'Pending Customer',
+      'Pending',
+      'On Hold'
+    ];
+    return waitingStatuses.some(waitingStatus => 
+      status.toLowerCase().includes(waitingStatus.toLowerCase())
+    );
+  };
+
+  // If ticket is currently in any waiting status, escalation is paused
+  if (ticket.status?.name && isWaitingStatus(ticket.status.name)) {
+    return "Paused";
+  }
+
   // If ticket is completed, no escalation
   const allCompleted = ticket.steps?.every((s: number) => s === 2);
   if (allCompleted) {
@@ -82,7 +128,12 @@ export const getEscalationLevelForFilter = (ticket: Ticket): string => {
 
   const start = new Date(startDate);
   const now = new Date();
-  const elapsedHours = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
+  let elapsedHours = (now.getTime() - start.getTime()) / (1000 * 60 * 60);
+  
+  // Subtract waiting time if available
+  if (ticket.totalWaitingHours) {
+    elapsedHours = Math.max(0, elapsedHours - ticket.totalWaitingHours);
+  }
   
   // Calculate percentage of time elapsed
   const percentageElapsed = (elapsedHours / timeLimit) * 100;

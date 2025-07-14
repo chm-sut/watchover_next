@@ -93,6 +93,18 @@ function TicketInformationContent() {
     }
   };
 
+  const getTotalWaitingTime = (ticket: any) => {
+    let totalWaitingTime = ticket.totalWaitingHours || 0;
+    
+    // If currently waiting, add time since waiting started
+    if (ticket.isCurrentlyWaiting && ticket.waitingStartTime) {
+      const currentWaitingDuration = (new Date().getTime() - new Date(ticket.waitingStartTime).getTime()) / (1000 * 60 * 60);
+      totalWaitingTime += currentWaitingDuration;
+    }
+    
+    return totalWaitingTime;
+  };
+
 
   const stepNames = ["Create Ticket", "Acknowledge", "Investigate", "Engineer Plan & Update", "Request for Update", "Waiting", "Resolve", "Complete"];
 
@@ -176,17 +188,23 @@ function TicketInformationContent() {
           {/* Floating Header */}
           {ticket && (
             <div className="sticky rounded-t-2xl top-0 z-20 bg-logoBlack bg-opacity-10 backdrop-blur-md px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 relative overflow-hidden border-b border-white border-opacity-20">
-              <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <button
-                  onClick={() => router.push('/ticket')}
-                  className="flex items-center gap-2 px-4 py-2 rounded-md text-logoWhite hover:bg-logoBlue hover:text-logoWhite transition-colors font-body text-body"
-                >
-                  ← Back
-                </button>
-                <div className="flex items-center gap-3 flex-1">
+              {/* Mobile: Stack everything vertically */}
+              <div className="block md:hidden space-y-3">
+                {/* Back button */}
+                <div className="flex items-center">
+                  <button
+                    onClick={() => router.push('/ticket')}
+                    className="flex items-center gap-2 px-3 py-2 rounded-md text-logoWhite hover:bg-logoBlue hover:text-logoWhite transition-colors font-body text-sm"
+                  >
+                    ← Back
+                  </button>
+                </div>
+
+                {/* Ticket code */}
+                <div className="flex items-center gap-3 flex-wrap">
                   <button
                     onClick={() => window.open(`https://cloud-hm.atlassian.net/browse/${ticket.code}`, '_blank')}
-                    className="text-logoWhite font-mono text-base font-semibold px-3 py-1 bg-white bg-opacity-20 hover:bg-logoBlue hover:text-logoWhite rounded transition-colors cursor-pointer flex items-center gap-2"
+                    className="text-logoWhite font-mono text-sm font-semibold px-3 py-1 bg-white bg-opacity-20 hover:bg-logoBlue hover:text-logoWhite rounded transition-colors cursor-pointer flex items-center gap-2"
                     title="Open in JIRA"
                   >
                     {ticket.code}
@@ -194,9 +212,40 @@ function TicketInformationContent() {
                       <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
                     </svg>
                   </button>
-                  <span className="text-logoWhite font-heading text-h6 sm:text-h5 font-medium">
+                </div>
+
+                {/* Title */}
+                <div>
+                  <h2 className="text-logoWhite font-heading text-base font-medium line-clamp-2">
                     {ticket.name}
-                  </span>
+                  </h2>
+                </div>
+              </div>
+
+              {/* Desktop: Original horizontal layout */}
+              <div className="hidden md:block">
+                <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
+                  <button
+                    onClick={() => router.push('/ticket')}
+                    className="flex items-center gap-2 px-4 py-2 rounded-md text-logoWhite hover:bg-logoBlue hover:text-logoWhite transition-colors font-body text-body"
+                  >
+                    ← Back
+                  </button>
+                  <div className="flex items-center gap-3 flex-1">
+                    <button
+                      onClick={() => window.open(`https://cloud-hm.atlassian.net/browse/${ticket.code}`, '_blank')}
+                      className="text-logoWhite font-mono text-base font-semibold px-3 py-1 bg-white bg-opacity-20 hover:bg-logoBlue hover:text-logoWhite rounded transition-colors cursor-pointer flex items-center gap-2"
+                      title="Open in JIRA"
+                    >
+                      {ticket.code}
+                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M19 19H5V5h7V3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2v-7h-2v7zM14 3v2h3.59l-9.83 9.83 1.41 1.41L19 6.41V10h2V3h-7z"/>
+                      </svg>
+                    </button>
+                    <span className="text-logoWhite font-heading text-h6 sm:text-h5 font-medium">
+                      {ticket.name}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -250,7 +299,7 @@ function TicketInformationContent() {
                   <label className="text-darkWhite text-sm block mb-1">Waiting Time:</label>
                   <div className="flex items-center gap-2">
                     <p className="text-logoWhite font-medium">
-                      {formatWaitingTime(ticket.totalWaitingHours || 0)}
+                      {formatWaitingTime(getTotalWaitingTime(ticket))}
                     </p>
                     {ticket.isCurrentlyWaiting && (
                       <span className="px-2 py-1 bg-yellow-600 bg-opacity-80 text-yellow-100 text-xs rounded-full">
@@ -591,7 +640,7 @@ function TicketInformationContent() {
                                   {subIndex === 5 && ((ticket.totalWaitingHours && ticket.totalWaitingHours > 0) || ticket.isCurrentlyWaiting) && (
                                     <div className="ml-8 mt-3">
                                       <div className="px-3 py-2 bg-yellow-600 bg-opacity-60 text-yellow-100 text-xs font-medium rounded text-center">
-                                        ⏳ Currently waiting for {formatWaitingTime(ticket.totalWaitingHours || 0)}
+                                        ⏳ Currently waiting for {formatWaitingTime(getTotalWaitingTime(ticket))}
                                       </div>
                                     </div>
                                   )}
@@ -678,7 +727,7 @@ function TicketInformationContent() {
                             <div className="flex items-center gap-2">
                               <span className="text-xs sm:text-sm whitespace-nowrap">Duration:</span>
                               <span className="whitespace-nowrap text-yellow-300">
-                                {formatWaitingTime(ticket.totalWaitingHours || 0)}
+                                {formatWaitingTime(getTotalWaitingTime(ticket))}
                               </span>
                             </div>
                             {ticket.isCurrentlyWaiting && (

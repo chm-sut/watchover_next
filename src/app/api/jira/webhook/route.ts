@@ -471,18 +471,39 @@ async function updateWaitingTime(ticketId: string, fromStatus: string, toStatus:
     let newTotalWaitingHours = ticket.totalWaitingHours;
     let newWaitingStartTime = ticket.waitingStartTime;
 
+    // Check if status is waiting-related
+    const isWaitingStatus = (status: string) => {
+      if (!status) return false;
+      const waitingStatuses = [
+        'Waiting',
+        'Waiting for Customer', 
+        'Waiting for customer',
+        'Waiting Customer',
+        'Customer Waiting',
+        'Pending Customer',
+        'Pending',
+        'On Hold'
+      ];
+      return waitingStatuses.some(waitingStatus => 
+        status.toLowerCase().includes(waitingStatus.toLowerCase())
+      );
+    };
+
     // Handle status changes
-    if (fromStatus !== 'Waiting' && toStatus === 'Waiting') {
+    const fromIsWaiting = isWaitingStatus(fromStatus);
+    const toIsWaiting = isWaitingStatus(toStatus);
+
+    if (!fromIsWaiting && toIsWaiting) {
       // Starting to wait
       newWaitingStartTime = new Date();
-      console.log('⏸️ Starting waiting period for ticket:', ticketId);
-    } else if (fromStatus === 'Waiting' && toStatus !== 'Waiting') {
+      console.log(`⏸️ Starting waiting period for ticket: ${ticketId} (status: ${toStatus})`);
+    } else if (fromIsWaiting && !toIsWaiting) {
       // Ending waiting period
       if (ticket.waitingStartTime) {
         const waitingDuration = (new Date().getTime() - ticket.waitingStartTime.getTime()) / (1000 * 60 * 60);
         newTotalWaitingHours += waitingDuration;
         newWaitingStartTime = null;
-        console.log(`⏭️ Ending waiting period for ticket: ${ticketId}, duration: ${waitingDuration.toFixed(2)} hours`);
+        console.log(`⏭️ Ending waiting period for ticket: ${ticketId}, duration: ${waitingDuration.toFixed(2)} hours (from: ${fromStatus} to: ${toStatus})`);
       }
     }
 
