@@ -45,6 +45,130 @@ async function getCustomerFromDatabase(objectId: string): Promise<string> {
   }
 }
 
+// Helper function to extract text from comment body
+function extractCommentText(body: unknown): string {
+  if (typeof body === 'string') {
+    return body;
+  }
+  
+  if (!body || typeof body !== 'object' || !('content' in body)) {
+    return "No comment content";
+  }
+  
+  try {
+    const bodyObj = body as Record<string, unknown>;
+    if (bodyObj.content && Array.isArray(bodyObj.content)) {
+      return extractTextFromADF(bodyObj.content);
+    }
+  } catch (error) {
+    console.error('Error extracting comment text:', error);
+  }
+  
+  return "Comment unavailable";
+}
+
+// Handle comment events from JIRA webhook
+async function handleCommentEvent(payload: JiraWebhookPayload): Promise<NextResponse> {
+  const { webhookEvent, issue, comment } = payload;
+  
+  if (!issue || !comment) {
+    return NextResponse.json(
+      { error: 'Missing issue or comment data' },
+      { status: 400 }
+    );
+  }
+
+  const ticketId = issue.key;
+  const commentId = comment.id;
+
+  try {
+    // Ensure the ticket exists in our database
+    await ensureTicketExists(issue);
+
+    if (webhookEvent === 'comment_created' || webhookEvent === 'comment_updated') {
+      // Extract comment data
+      const commentData = {
+        jiraCommentId: commentId,
+        ticketId: ticketId,
+        body: extractCommentText(comment.body),
+        authorName: comment.author.displayName,
+        authorEmail: comment.author.emailAddress,
+        authorKey: comment.author.accountId,
+        created: new Date(comment.created),
+        updated: comment.updated ? new Date(comment.updated) : null,
+        isInternal: comment.visibility?.type === 'group' || comment.visibility?.type === 'role',
+        visibility: comment.visibility ? JSON.stringify(comment.visibility) : null
+      };
+
+      // Upsert comment (create or update)
+      await prisma.comment.upsert({
+        where: { jiraCommentId: commentId },
+        update: {
+          body: commentData.body,
+          updated: commentData.updated,
+          isInternal: commentData.isInternal,
+          visibility: commentData.visibility
+        },
+        create: commentData
+      });
+
+      console.log(`✅ ${webhookEvent === 'comment_created' ? 'Created' : 'Updated'} comment ${commentId} for ticket ${ticketId}`);
+      
+    } else if (webhookEvent === 'comment_deleted') {
+      // Delete comment from database
+      await prisma.comment.deleteMany({
+        where: { jiraCommentId: commentId }
+      });
+
+      console.log(`✅ Deleted comment ${commentId} for ticket ${ticketId}`);
+    }
+
+    return NextResponse.json({ 
+      success: true, 
+      message: `Comment ${webhookEvent} processed successfully`,
+      ticketId,
+      commentId
+    });
+
+  } catch (error) {
+    console.error(`❌ Error processing ${webhookEvent}:`, error);
+    return NextResponse.json(
+      { 
+        error: `Failed to process ${webhookEvent}`, 
+        details: error instanceof Error ? error.message : 'Unknown error' 
+      },
+      { status: 500 }
+    );
+  }
+}
+
+// Ensure ticket exists in database (minimal version for comment events)
+async function ensureTicketExists(issue: JiraWebhookPayload['issue']) {
+  const existingTicket = await prisma.jiraTicket.findUnique({
+    where: { ticketId: issue.key }
+  });
+
+  if (!existingTicket) {
+    // Create minimal ticket record if it doesn't exist
+    await prisma.jiraTicket.create({
+      data: {
+        ticketId: issue.key,
+        summary: issue.fields.summary,
+        priority: issue.fields.priority?.name || 'MEDIUM',
+        status: issue.fields.status?.name || 'Unknown',
+        assignee: issue.fields.assignee?.displayName || null,
+        assigneeEmail: issue.fields.assignee?.emailAddress || null,
+        reporter: issue.fields.reporter?.displayName || null,
+        reporterEmail: issue.fields.reporter?.emailAddress || null,
+        customer: 'Unknown', // Will be updated by full sync
+        createDate: new Date(issue.fields.created),
+        lastUpdated: new Date()
+      }
+    });
+    console.log(`✅ Created minimal ticket record for ${issue.key}`);
+  }
+}
+
 interface JiraWebhookPayload {
   issue: {
     key: string;
@@ -68,6 +192,21 @@ interface JiraWebhookPayload {
       };
     };
   };
+  comment?: {
+    id: string;
+    body: unknown;
+    author: {
+      displayName: string;
+      emailAddress: string;
+      accountId: string;
+    };
+    created: string;
+    updated: string;
+    visibility?: {
+      type: string;
+      value: string;
+    };
+  };
   webhookEvent: string;
   issue_event_type_name?: string;
 }
@@ -82,13 +221,25 @@ export async function POST(request: NextRequest) {
       eventType: payload.issue_event_type_name
     });
 
-    // Only process relevant events
-    const relevantEvents = ['jira:issue_created', 'jira:issue_updated'];
+    // Process issue and comment events
+    const relevantEvents = [
+      'jira:issue_created', 
+      'jira:issue_updated',
+      'comment_created',
+      'comment_updated',
+      'comment_deleted'
+    ];
+    
     if (!relevantEvents.includes(payload.webhookEvent)) {
       return NextResponse.json({ 
         success: true, 
         message: 'Event not processed' 
       });
+    }
+
+    // Handle comment events
+    if (payload.webhookEvent.startsWith('comment_')) {
+      return await handleCommentEvent(payload);
     }
 
     const issue = payload.issue;

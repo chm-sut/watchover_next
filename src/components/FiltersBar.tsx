@@ -7,6 +7,7 @@ import PriorityDropdown from "./PriorityDropdown";
 import DateDropdown from "./DateDropdown";
 import NameDropdown from "./NameDropdown";
 import EscalationDropdown from "./EscalationDropdown";
+import ProgressDropdown from "./ProgressDropdown";
 
 interface Filters {
   code: string;
@@ -14,6 +15,7 @@ interface Filters {
   priority: string;
   customer: string;
   escalationLevel: string;
+  progress: string;
   startDay: string;
   startMonth: string;
   startYear: string;
@@ -100,6 +102,10 @@ export default function FiltersBar({ filters, setFilters }: FiltersBarProps) {
             value={filters.escalationLevel}
             onChange={(value) => setFilters({ ...filters, escalationLevel: value })}
           />
+          <ProgressDropdown
+            value={filters.progress}
+            onChange={(value) => setFilters({ ...filters, progress: value })}
+          />
         </div>
       </div>
 
@@ -136,6 +142,7 @@ export default function FiltersBar({ filters, setFilters }: FiltersBarProps) {
               priority: "",
               customer: "",
               escalationLevel: "",
+              progress: "",
               startDay: "",
               startMonth: "",
               startYear: "",

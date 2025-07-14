@@ -10,6 +10,7 @@ export default function TicketLifecyclePage() {
     priority: "",
     customer: "",
     escalationLevel: "",
+    progress: "",
     startDay: "",
     startMonth: "",
     startYear: "",

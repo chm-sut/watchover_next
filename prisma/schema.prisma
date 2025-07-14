@@ -26,6 +26,7 @@ model JiraTicket {
   waitingStartTime  DateTime?
   escalations       Escalation[]
   statusHistory     StatusHistory[]
+  comments          Comment[]
 
   @@map("jira_tickets")
 }
@@ -65,4 +66,23 @@ model StatusHistory {
   ticket      JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
 
   @@map("status_history")
+}
+
+model Comment {
+  id           String     @id @default(cuid())
+  jiraCommentId String    @unique
+  ticketId     String
+  body         String
+  authorName   String
+  authorEmail  String?
+  authorKey    String?
+  created      DateTime
+  updated      DateTime?
+  isInternal   Boolean    @default(false)
+  visibility   String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+  ticket       JiraTicket @relation(fields: [ticketId], references: [ticketId], onDelete: Cascade)
+
+  @@map("comments")
 }

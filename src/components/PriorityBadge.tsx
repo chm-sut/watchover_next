@@ -17,9 +17,9 @@ export default function PriorityBadge({ priority, size = "sm" }: PriorityBadgePr
 
   const getPriorityColor = (level: string) => {
     const base = `${getSizeClass()} rounded-full font-semibold font-body`;
-    switch (level) {
+    switch (level.toUpperCase()) {
       case "CRITICAL":
-        return `${base} bg-black text-logoWhite border border-logoWhite`;
+        return `${base} bg-logoBlack text-logoWhite border border-logoWhite`;
       case "HIGH":
         return `${base} bg-lightRed text-darkRed`;
       case "MEDIUM":
@@ -27,13 +27,13 @@ export default function PriorityBadge({ priority, size = "sm" }: PriorityBadgePr
       case "LOW":
         return `${base} bg-lightYellow text-darkRed`;
       default:
-        return base;
+        return `${base} bg-gray-500 text-white`;
     }
   };
 
   return (
     <span className={getPriorityColor(priority || 'LOW')}>
-      {priority || 'LOW'}
+      {(priority || 'LOW').toUpperCase()}
     </span>
   );
 }

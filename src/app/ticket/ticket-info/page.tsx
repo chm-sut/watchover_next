@@ -4,6 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useRouter } from "next/navigation";
 import TicketTimelineLoader from "@/components/TicketTimelineLoader";
 import EscalationBadge from "@/components/EscalationBadge";
+import PriorityBadge from "@/components/PriorityBadge";
 import type { Ticket } from "@/types";
 
 function TicketInformationContent() {
@@ -78,21 +79,6 @@ function TicketInformationContent() {
       hour12: true,
       timeZone: 'Asia/Bangkok'
     });
-  };
-
-  const getPriorityColor = (level: string) => {
-    switch (level.toUpperCase()) {
-      case "CRITICAL":
-        return "bg-logoRed text-logoWhite";
-      case "HIGH":
-        return "bg-lightRed text-darkRed";
-      case "MEDIUM":
-        return "bg-lightOrange text-darkRed";
-      case "LOW":
-        return "bg-lightYellow text-logoBlack";
-      default:
-        return "bg-darkWhite text-logoWhite";
-    }
   };
 
   const formatWaitingTime = (hours: number) => {
@@ -192,7 +178,7 @@ function TicketInformationContent() {
             <div className="sticky rounded-t-2xl top-0 z-20 bg-logoBlack bg-opacity-10 backdrop-blur-md px-4 sm:px-6 md:px-8 py-2 sm:py-3 md:py-4 relative overflow-hidden border-b border-white border-opacity-20">
               <div className="relative z-10 flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <button
-                  onClick={() => router.back()}
+                  onClick={() => router.push('/ticket')}
                   className="flex items-center gap-2 px-4 py-2 rounded-md text-logoWhite hover:bg-logoBlue hover:text-logoWhite transition-colors font-body text-body"
                 >
                   ← Back
@@ -200,7 +186,7 @@ function TicketInformationContent() {
                 <div className="flex items-center gap-3 flex-1">
                   <button
                     onClick={() => window.open(`https://cloud-hm.atlassian.net/browse/${ticket.code}`, '_blank')}
-                    className="text-logoWhite font-heading text-base font-semibold px-3 py-1 bg-white bg-opacity-20 hover:bg-logoBlue hover:text-logoWhite rounded transition-colors cursor-pointer flex items-center gap-2"
+                    className="text-logoWhite font-mono text-base font-semibold px-3 py-1 bg-white bg-opacity-20 hover:bg-logoBlue hover:text-logoWhite rounded transition-colors cursor-pointer flex items-center gap-2"
                     title="Open in JIRA"
                   >
                     {ticket.code}
@@ -226,9 +212,7 @@ function TicketInformationContent() {
               </div>
               <div>
                 <label className="text-darkWhite text-sm block mb-1">Priority:</label>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getPriorityColor(ticket.priority?.name || 'LOW')}`}>
-                  {ticket.priority?.name || 'LOW'}
-                </span>
+                <PriorityBadge priority={ticket.priority?.name || 'LOW'} size="md" />
               </div>
               
               <div>

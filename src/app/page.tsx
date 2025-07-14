@@ -12,7 +12,7 @@ export default function HomePage() {
     
     if (!sessionToken && !user) {
       // Redirect to login if not authenticated
-      router.push("/login");
+      router.push("/ticket");
     } else {
       // Redirect to analytics/dashboard if authenticated
       router.push("/analytics");

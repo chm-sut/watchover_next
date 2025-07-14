@@ -67,6 +67,7 @@ export interface Filters {
   name?: string;
   customer?: string;
   escalationLevel?: string;
+  progress?: string;
   startDay?: string;
   startMonth?: string;
   startYear?: string;

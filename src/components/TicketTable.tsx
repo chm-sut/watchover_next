@@ -195,6 +195,30 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     return { stepName: "Create Ticket", status: ticket.steps?.[0] || 1, stepIndex: 0 };
   };
 
+  const getTicketProgressFilter = (ticket: Ticket) => {
+    const latestStep = getLatestStep(ticket);
+    const allCompleted = ticket.steps?.every((s: number) => s === 2);
+    
+    if (allCompleted) {
+      return "complete";
+    }
+    
+    if (hasStepOccurred(ticket, 6) && (ticket.steps?.[6] || 0) > 0) {
+      return "resolve";
+    }
+    
+    const subProcess = getInvestigateSubProcess(ticket);
+    if (subProcess.status > 0) {
+      return "investigate";
+    }
+    
+    if (hasStepOccurred(ticket, 1) && (ticket.steps?.[1] || 0) > 0) {
+      return "acknowledge";
+    }
+    
+    return "create";
+  };
+
   const getStatusIcon = (status: number, ticket: Ticket, stepIndex: number) => {
     const className = "inline-block align-middle w-6 h-6";
     
@@ -265,6 +289,10 @@ export default function TicketTable({ filters }: { filters: Filters }) {
     const escalationLevel = t.escalationLevel || getEscalationLevelForFilter(t);
     const matchEscalation = !filters.escalationLevel || escalationLevel === filters.escalationLevel;
 
+    // Progress filter
+    const ticketProgress = getTicketProgressFilter(t);
+    const matchProgress = !filters.progress || ticketProgress === filters.progress;
+
     const [year, month, day] = t.startDate?.split("-") || [];
     const matchDay = !filters.startDay || filters.startDay === day;
     const matchMonth = !filters.startMonth || filters.startMonth === month;
@@ -276,6 +304,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
       matchPriority &&
       matchCustomer &&
       matchEscalation &&
+      matchProgress &&
       matchDay &&
       matchMonth &&
       matchYear
@@ -446,10 +475,10 @@ export default function TicketTable({ filters }: { filters: Filters }) {
           <thead className="sticky top-0 z-10 bg-logoBlack bg-opacity-10 backdrop-blur-md border-b border-gray-600">
             <tr>
               <th className="px-4 py-2 whitespace-nowrap">
-                Code
+                Ticket
                 {isRefreshing && <span className="ml-2 text-green-400">📊</span>}
               </th>
-              <th className="px-4 py-2">Name</th>
+              <th className="px-4 py-2">Summary</th>
               <th className="px-4 py-2">Priority</th>
               <th className="px-4 py-2 whitespace-nowrap">Escalation Lv.</th>
               <th className="px-4 py-2">Customer</th>
@@ -470,7 +499,7 @@ export default function TicketTable({ filters }: { filters: Filters }) {
                   className="border-b border-gray-700 hover:bg-white hover:bg-opacity-10 cursor-pointer transition-colors h-12"
                   onClick={() => router.push(`/ticket/ticket-info?ticketCode=${t.code}`)}
                 >
-                  <td className="px-4 py-2 whitespace-nowrap">{t.code}</td>
+                  <td className="px-4 py-2 whitespace-nowrap font-mono">{t.code}</td>
                   <td className="px-4 py-2">{t.name}</td>
                   <td className="px-4 py-2">
                     <PriorityBadge priority={t.priority?.name || 'LOW'} />
