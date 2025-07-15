@@ -110,7 +110,7 @@ export default function TicketTimelineLoader() {
                   style={{ height: `${(8 - 1) * 6.5 * 16}px` }}
                 />
                 
-                {["Create Ticket", "Acknowledge", "Investigate", "Resolve", "Complete"].map((stepName, index) => (
+                {["Create Ticket", "Acknowledge", "Investigate", "Resolve", "Complete"].map((_, index) => (
                   <div key={index} className="relative mb-6 sm:mb-8 last:mb-0">
                     {/* Timeline Icon */}
                     <div className="absolute left-[-50px] sm:left-[-58px] top-0 w-10 h-10 sm:w-11 sm:h-11 z-10">
