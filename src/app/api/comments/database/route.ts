@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import axios from 'axios';
 
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url);
@@ -28,6 +29,36 @@ export async function GET(request: NextRequest) {
       take: limit
     });
 
+    // Get unique ticket IDs to fetch attachments
+    const uniqueTicketIds = [...new Set(comments.map(c => c.ticket.ticketId))];
+    const ticketAttachments = new Map();
+
+    // Fetch attachments for all unique tickets
+    if (uniqueTicketIds.length > 0) {
+      const auth = Buffer.from(`${process.env.JIRA_EMAIL}:${process.env.JIRA_TOKEN || process.env.JIRA_API_TOKEN}`).toString('base64');
+      const jiraUrl = process.env.JIRA_URL || process.env.JIRA_BASE_URL;
+      
+      await Promise.all(uniqueTicketIds.map(async (ticketId) => {
+        try {
+          const response = await axios.get(`${jiraUrl}/rest/api/3/issue/${ticketId}`, {
+            headers: { 'Authorization': `Basic ${auth}`, 'Accept': 'application/json' },
+            params: { fields: 'attachment' }
+          });
+          const attachments = response.data.fields.attachment || [];
+          ticketAttachments.set(ticketId, attachments.map((att: any) => ({
+            id: att.id,
+            filename: att.filename,
+            mimeType: att.mimeType,
+            size: att.size,
+            created: att.created
+          })));
+        } catch (error) {
+          console.warn(`Failed to fetch attachments for ${ticketId}:`, error);
+          ticketAttachments.set(ticketId, []);
+        }
+      }));
+    }
+
     const formattedComments = comments.map(comment => ({
       id: comment.id,
       jiraCommentId: comment.jiraCommentId,
@@ -45,7 +76,8 @@ export async function GET(request: NextRequest) {
       created: comment.created.toISOString(),
       updated: comment.updated?.toISOString() || null,
       isInternal: comment.isInternal,
-      visibility: comment.visibility
+      visibility: comment.visibility,
+      attachments: ticketAttachments.get(comment.ticket.ticketId) || []
     }));
 
     return NextResponse.json({

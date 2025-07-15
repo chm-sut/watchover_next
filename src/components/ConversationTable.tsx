@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import TablePagination from "@mui/material/TablePagination";
 import PriorityBadge from "./PriorityBadge";
+import StatusBadge from "./StatusBadge";
 
 // Real comment data structure
 interface Comment {
@@ -10,6 +11,7 @@ interface Comment {
   ticketCode: string;
   ticketSummary: string;
   ticketPriority: string;
+  ticketStatus: string;
   body: string;
   renderedBody: string;
   author: {
@@ -21,6 +23,11 @@ interface Comment {
   updated: string;
   isInternal: boolean;
   visibility: unknown;
+  attachments?: Array<{
+    id: string;
+    filename: string;
+    mimeType: string;
+  }>;
 }
 
 // Filters for conversations
@@ -29,6 +36,7 @@ interface ConversationFilters {
   name: string;
   status: string;
   customer: string;
+  priority: string;
   startDay: string;
   startMonth: string;
   startYear: string;
@@ -65,6 +73,16 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
     const matchCode = !filters.code || comment.ticketCode.includes(filters.code);
     const matchName = !filters.name || comment.ticketSummary.toLowerCase().includes(filters.name.toLowerCase());
     
+    // Status filtering - map JIRA status to simplified status
+    const getSimplifiedStatus = (status: string) => {
+      const closedStatuses = ['Closed', 'Resolved', 'Done'];
+      return closedStatuses.includes(status) ? 'Closed' : 'Ongoing';
+    };
+    const matchStatus = !filters.status || getSimplifiedStatus(comment.ticketStatus) === filters.status;
+    
+    // Priority filtering
+    const matchPriority = !filters.priority || comment.ticketPriority.toUpperCase() === filters.priority.toUpperCase();
+    
     const commentDate = new Date(comment.created);
     const year = commentDate.getFullYear().toString();
     const month = (commentDate.getMonth() + 1).toString().padStart(2, '0');
@@ -77,6 +95,8 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
     return (
       matchCode &&
       matchName &&
+      matchStatus &&
+      matchPriority &&
       matchDay &&
       matchMonth &&
       matchYear
@@ -153,7 +173,10 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
                 <h3 className="text-white font-semibold text-lg font-mono">{comment.ticketCode}</h3>
                 <p className="text-gray-300 text-sm line-clamp-2">{comment.ticketSummary}</p>
               </div>
-              <PriorityBadge priority={comment.ticketPriority} />
+              <div className="flex flex-col gap-2">
+                <PriorityBadge priority={comment.ticketPriority} />
+                <StatusBadge status={comment.ticketStatus} />
+              </div>
             </div>
 
             {/* Author Info */}
@@ -172,6 +195,11 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
               <p className="text-gray-300 text-sm line-clamp-3">
                 {comment.body}
               </p>
+              {comment.attachments && comment.attachments.length > 0 && (
+                <div className="text-xs text-blue-400 mt-2">
+                  📎 {comment.attachments.length} file{comment.attachments.length > 1 ? 's' : ''}
+                </div>
+              )}
             </div>
 
             {/* Time Info */}
@@ -194,6 +222,7 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
                 <th className="px-4 py-2 whitespace-nowrap">Ticket</th>
                 <th className="px-4 py-2">Summary</th>
                 <th className="px-4 py-2 text-center">Priority</th>
+                <th className="px-4 py-2 text-center">Status</th>
                 <th className="px-4 py-2">Author</th>
                 <th className="px-4 py-2">Comment</th>
                 <th className="px-4 py-2 whitespace-nowrap">Time</th>
@@ -216,9 +245,19 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
                   <td className="px-4 py-2 text-center">
                     <PriorityBadge priority={comment.ticketPriority} />
                   </td>
+                  <td className="px-4 py-2 text-center">
+                    <StatusBadge status={comment.ticketStatus} />
+                  </td>
                   <td className="px-4 py-2">{comment.author.name}</td>
-                  <td className="px-4 py-2 max-w-md truncate" title={comment.body}>
-                    {comment.body.length > 100 ? `${comment.body.substring(0, 100)}...` : comment.body}
+                  <td className="px-4 py-2 max-w-md">
+                    <div className="truncate" title={comment.body}>
+                      {comment.body.length > 100 ? `${comment.body.substring(0, 100)}...` : comment.body}
+                    </div>
+                    {comment.attachments && comment.attachments.length > 0 && (
+                      <div className="text-xs text-blue-400 mt-1">
+                        📎 {comment.attachments.length} file{comment.attachments.length > 1 ? 's' : ''}
+                      </div>
+                    )}
                   </td>
                   <td className="px-4 py-2 whitespace-nowrap text-xs text-gray-400">
                     {formatDateTime(comment.created)}

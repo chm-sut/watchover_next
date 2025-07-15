@@ -58,19 +58,27 @@ export async function GET(
   };
 
   try {
-    // Fetch comments from JIRA REST API
-    const url = `${process.env.JIRA_BASE_URL}/rest/api/3/issue/${ticketCode}/comment`;
-    
-    const response = await axios.get(url, {
-      headers,
-      params: {
-        expand: "renderedBody",
-        orderBy: "-created", // Latest first
-        maxResults: 100
-      },
-    });
+    // Fetch ticket details with attachments and comments
+    const [commentsResponse, ticketResponse] = await Promise.all([
+      axios.get(`${process.env.JIRA_BASE_URL}/rest/api/3/issue/${ticketCode}/comment`, {
+        headers,
+        params: {
+          expand: "renderedBody",
+          orderBy: "-created",
+          maxResults: 100
+        },
+      }),
+      axios.get(`${process.env.JIRA_BASE_URL}/rest/api/3/issue/${ticketCode}`, {
+        headers,
+        params: {
+          fields: "attachment"
+        },
+      })
+    ]);
 
-    const comments = response.data.comments.map((comment: any) => ({
+    const attachments = ticketResponse.data.fields.attachment || [];
+    
+    const comments = commentsResponse.data.comments.map((comment: any) => ({
       id: comment.id,
       ticketCode: ticketCode,
       body: extractTextFromJiraComment(comment.body),
@@ -83,12 +91,19 @@ export async function GET(
       created: comment.created,
       updated: comment.updated,
       isInternal: comment.visibility?.type === 'group' || comment.visibility?.type === 'role',
-      visibility: comment.visibility || null
+      visibility: comment.visibility || null,
+      attachments: attachments.map((att: any) => ({
+        id: att.id,
+        filename: att.filename,
+        mimeType: att.mimeType,
+        size: att.size,
+        created: att.created
+      }))
     }));
 
     return NextResponse.json({
       ticketCode,
-      total: response.data.total,
+      total: commentsResponse.data.total,
       comments
     });
 

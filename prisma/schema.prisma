@@ -73,6 +73,7 @@ model Comment {
   jiraCommentId String    @unique
   ticketId     String
   body         String
+  renderedBody String?
   authorName   String
   authorEmail  String?
   authorKey    String?

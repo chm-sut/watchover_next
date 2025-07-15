@@ -13,6 +13,7 @@ function TicketInformationContent() {
   const ticketCode = searchParams.get('ticketCode');
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [loading, setLoading] = useState(true);
+  const [hasConversation, setHasConversation] = useState(false);
 
   useEffect(() => {
     if (ticketCode) {
@@ -62,6 +63,22 @@ function TicketInformationContent() {
                   setLoading(false);
                 });
             });
+        });
+
+      // Check if conversations exist for this ticket
+      fetch(`/api/comments/database?ticketCode=${ticketCode}&limit=1`)
+        .then((res) => {
+          if (res.ok) {
+            return res.json();
+          }
+          throw new Error("Failed to check conversations");
+        })
+        .then((data) => {
+          setHasConversation(data.comments && data.comments.length > 0);
+        })
+        .catch((err) => {
+          console.error("Error checking conversations:", err);
+          setHasConversation(false);
         });
     }
   }, [ticketCode]);
@@ -121,7 +138,7 @@ function TicketInformationContent() {
       "Acknowledge": ["ASSIGN ENGINEER", "ASSIGN ENGINNER"],
       "Investigate": ["In Progress", "Investigating"],
       "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
-      "Request for Update": ["Request for update", "Pending Update", "Update Requested"],
+      "Request for Update": ["Request For Update", "Pending Update", "Update Requested"],
       "Waiting": ["Waiting"],
       "Resolve": ["Resolved", "Resolving"],
       "Complete": ["Closed", "Done", "Completed"]
@@ -280,6 +297,21 @@ function TicketInformationContent() {
                 <label className="text-darkWhite text-sm block mb-1">Customer:</label>
                 <p className="text-logoWhite font-medium">{ticket.customer}</p>
               </div>
+              
+              {hasConversation && (
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Conversation:</label>
+                  <button
+                    onClick={() => router.push(`/live-conversation/${ticket.code}`)}
+                    className="bg-logoBlue hover:bg-blue-600 text-logoWhite px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-2"
+                  >
+                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M20 2H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h4v3c0 .6.4 1 1 1h.5c.2 0 .5-.1.7-.3L14.6 18H20c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                    </svg>
+                    View Live Conversation
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -661,8 +693,8 @@ function TicketInformationContent() {
                                           } else {
                                             // For other sub-processes, find the appropriate status change
                                             const stepToStatusMap: { [key: string]: string[] } = {
-                                              "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
-                                              "Request for Update": ["Request for update", "Pending Update", "Update Requested"]
+                                              "Engineer Plan & Update": ["Engineer Plan & Update", "Engineer plan & update", "Engineering Planning", "Planning"],
+                                              "Request for Update": ["Request for Update", "Request for update", "Pending Update", "Update Requested"]
                                             };
                                             
                                             const statusPatterns = stepToStatusMap[subStepName];
@@ -694,8 +726,8 @@ function TicketInformationContent() {
                                           } else {
                                             // For other sub-processes, find the appropriate status change
                                             const stepToStatusMap: { [key: string]: string[] } = {
-                                              "Engineer Plan & Update": ["Engineer plan & update", "Engineering Planning", "Planning"],
-                                              "Request for Update": ["Request for update", "Pending Update", "Update Requested"]
+                                              "Engineer Plan & Update": ["Engineer Plan & Update", "Engineer plan & update", "Engineering Planning", "Planning"],
+                                              "Request for Update": ["Request for Update", "Request for update", "Pending Update", "Update Requested"]
                                             };
                                             
                                             const statusPatterns = stepToStatusMap[subStepName];

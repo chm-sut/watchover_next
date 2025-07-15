@@ -59,6 +59,11 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
 
   const handleNavigation = (path: string) => {
     router.push(path);
+    setSidebarOpen(false);
+  };
+
+  const handleClose = () => {
+    setSidebarOpen(false);
   };
 
   // Get page title based on current route
@@ -132,7 +137,7 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-20"
-          onClick={() => setSidebarOpen(false)}
+          onClick={handleClose}
           aria-hidden="true"
         />
       )}
@@ -145,7 +150,8 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
           w-60 sm:w-64 md:w-72 xxl:w-[18rem]
         `}
         onMouseEnter={() => setSidebarOpen(true)}
-        onMouseLeave={() => setSidebarOpen(false)}
+        onMouseLeave={handleClose}
+        onTouchStart={() => setSidebarOpen(true)}
       >
         <div className="h-full w-full rounded-xl overflow-hidden">
           <div className="h-full w-full bg-logoBlack bg-opacity-50 text-white flex flex-col gap-4 backdrop-blur-sm border-b border-l border-white border-opacity-20 rounded-2xl">
@@ -177,10 +183,12 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
         </div>
       </div>
 
-      {/* Hover Trigger Area for Sidebar */}
+      {/* Hover/Touch Trigger Area for Sidebar */}
       <div
         className="fixed top-0 left-0 w-4 h-full z-20"
         onMouseEnter={() => setSidebarOpen(true)}
+        onTouchStart={() => setSidebarOpen(true)}
+        onClick={() => setSidebarOpen(true)}
       />
     </>
   );

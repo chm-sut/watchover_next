@@ -96,6 +96,7 @@ async function syncCommentsToDatabase() {
             jiraCommentId: comment.id,
             ticketId: ticket.ticketId,
             body: extractCommentText(comment.body),
+            renderedBody: comment.renderedBody || extractCommentText(comment.body),
             authorName: comment.author.displayName,
             authorEmail: comment.author.emailAddress || null,
             authorKey: comment.author.accountId,
@@ -116,6 +117,7 @@ async function syncCommentsToDatabase() {
               where: { jiraCommentId: comment.id },
               data: {
                 body: commentData.body,
+                renderedBody: commentData.renderedBody,
                 updated: commentData.updated,
                 isInternal: commentData.isInternal,
                 visibility: commentData.visibility
