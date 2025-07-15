@@ -62,7 +62,7 @@ function MetricCard({
   return (
     <div className={`bg-gradient-to-br ${gradientFrom} ${gradientTo} backdrop-blur-sm rounded-xl p-6 border ${borderColor}`}>
       <div className="flex items-center justify-between mb-4">
-        <div className="w-12 h-12 bg-blue-500/30 rounded-lg flex items-center justify-center">
+        <div className="w-12 h-12 bg-logoBlack bg-opacity-50 rounded-lg flex items-center justify-center">
           {icon}
         </div>
         <div className="text-darkWhite text-sm font-medium">{title}</div>
@@ -305,7 +305,7 @@ function AnalyticsContent() {
   if (!analytics) {
     return (
       <div className="flex-1 overflow-auto rounded-2xl">
-        <div className="bg-black bg-opacity-10 h-full rounded-2xl p-6 flex items-center justify-center">
+        <div className="bg-black bg-opacity-10 h-auto rounded-2xl p-6 flex items-center justify-center">
           <div className="text-center">
             <h2 className="text-h6 text-logoWhite mb-2 font-heading">No Data Available</h2>
             <p className="text-darkWhite text-sm">Unable to load analytics data</p>
@@ -317,7 +317,7 @@ function AnalyticsContent() {
 
   return (
     <div className="flex-1 overflow-auto rounded-2xl">
-      <div className="bg-black bg-opacity-10 h-full rounded-2xl p-6 space-y-6">
+      <div className="bg-black bg-opacity-10 h-auto rounded-2xl p-6 space-y-6">
         
         {/* Key Metrics Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
