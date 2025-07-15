@@ -1,4 +1,3 @@
-
 "use client";
 import { useState } from 'react';
 import { BarChart3, Home, MessageCircle, Cloud, Ticket } from 'lucide-react';
@@ -136,7 +135,7 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
       {/* Dim Background with Blur */}
       {sidebarOpen && (
         <div
-          className="fixed inset-0 bg-black bg-opacity-40 backdrop-blur-sm z-20"
+          className="fixed inset-0 z-20"
           onClick={handleClose}
           aria-hidden="true"
         />
@@ -154,7 +153,7 @@ export default function SideBar({ children, isOpen, onToggle }: SideBarProps) {
         onTouchStart={() => setSidebarOpen(true)}
       >
         <div className="h-full w-full rounded-xl overflow-hidden">
-          <div className="h-full w-full bg-logoBlack bg-opacity-50 text-white flex flex-col gap-4 backdrop-blur-sm border-b border-l border-white border-opacity-20 rounded-2xl">
+          <div className="h-full w-full bg-opacity-50 text-white flex flex-col gap-4 backdrop-blur-md border border-white border-opacity-20 rounded-3xl">
             <div className="mb-6 p-6 flex justify-center">
               <img src="/icons/watchover_logo.svg" alt="Watchover Logo" className="w-auto h-auto" />
             </div>
