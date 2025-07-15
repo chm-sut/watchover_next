@@ -64,6 +64,7 @@ export default function DesktopTicketRow({
           stepIndex={0}
           onMouseEnter={onStatusIconHover}
           onMouseLeave={onStatusIconLeave}
+          className="inline-block align-middle w-6 h-6"
         />
       </td>
       
@@ -75,6 +76,7 @@ export default function DesktopTicketRow({
           stepIndex={1}
           onMouseEnter={onStatusIconHover}
           onMouseLeave={onStatusIconLeave}
+          className="inline-block align-middle w-6 h-6"
         />
       </td>
       
@@ -103,6 +105,7 @@ export default function DesktopTicketRow({
                     stepIndex={subProcess.stepIndex}
                     onMouseEnter={onStatusIconHover}
                     onMouseLeave={onStatusIconLeave}
+                    className="inline-block align-middle w-6 h-6"
                   />
                 </div>
                 <span className="text-xs text-orange-400 font-medium">
@@ -118,6 +121,7 @@ export default function DesktopTicketRow({
                 stepIndex={subProcess.stepIndex}
                 onMouseEnter={onStatusIconHover}
                 onMouseLeave={onStatusIconLeave}
+                className="inline-block align-middle w-6 h-6"
               />
             );
           }
@@ -132,6 +136,7 @@ export default function DesktopTicketRow({
           stepIndex={6}
           onMouseEnter={onStatusIconHover}
           onMouseLeave={onStatusIconLeave}
+          className="inline-block align-middle w-6 h-6"
         />
       </td>
       
@@ -143,6 +148,7 @@ export default function DesktopTicketRow({
           stepIndex={7}
           onMouseEnter={onStatusIconHover}
           onMouseLeave={onStatusIconLeave}
+          className="inline-block align-middle w-6 h-6"
         />
       </td>
     </tr>

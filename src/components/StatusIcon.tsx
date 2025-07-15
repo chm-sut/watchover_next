@@ -4,9 +4,11 @@ import { hasStepOccurred, getStepDetails, stepNames } from "../utils/ticketUtils
 
 interface StatusIconProps {
   status: number;
-  ticket: Ticket;
-  stepIndex: number;
-  onMouseEnter: (e: React.MouseEvent, hoverInfo: {
+  className?: string;
+  // Optional props for interactive mode (TicketTable)
+  ticket?: Ticket;
+  stepIndex?: number;
+  onMouseEnter?: (e: React.MouseEvent, hoverInfo: {
     stepName: string;
     date: string;
     author: string;
@@ -14,21 +16,21 @@ interface StatusIconProps {
     x: number;
     y: number;
   }) => void;
-  onMouseLeave: () => void;
+  onMouseLeave?: () => void;
 }
 
 export default function StatusIcon({ 
   status, 
+  className = "w-full h-full",
   ticket, 
   stepIndex, 
   onMouseEnter, 
   onMouseLeave 
 }: StatusIconProps) {
-  const className = "inline-block align-middle w-6 h-6";
+  // For interactive mode with tooltips
+  const isInteractive = ticket && stepIndex !== undefined && onMouseEnter && onMouseLeave;
   
-  const actualStatus = hasStepOccurred(ticket, stepIndex) ? status : 0;
-  const stepDetails = getStepDetails(ticket, stepIndex);
-  const stepName = stepNames[stepIndex];
+  const actualStatus = isInteractive ? (hasStepOccurred(ticket, stepIndex) ? status : 0) : status;
   
   const getStatusText = (status: number) => {
     switch (status) {
@@ -40,6 +42,10 @@ export default function StatusIcon({
   };
   
   const handleMouseEnter = (e: React.MouseEvent) => {
+    if (!isInteractive) return;
+    
+    const stepDetails = getStepDetails(ticket, stepIndex);
+    const stepName = stepNames[stepIndex];
     const rect = e.currentTarget.getBoundingClientRect();
     
     onMouseEnter(e, {
@@ -65,13 +71,18 @@ export default function StatusIcon({
     }
   })();
 
-  return (
-    <div 
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={onMouseLeave}
-      className="inline-block cursor-pointer"
-    >
-      {iconElement}
-    </div>
-  );
+  if (isInteractive) {
+    return (
+      <div 
+        onMouseEnter={handleMouseEnter}
+        onMouseLeave={onMouseLeave}
+        className="inline-block cursor-pointer"
+      >
+        {iconElement}
+      </div>
+    );
+  }
+
+  // Simple mode - just return the icon
+  return iconElement;
 }

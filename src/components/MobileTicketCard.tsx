@@ -57,6 +57,7 @@ export default function MobileTicketCard({
             stepIndex={latestStep.stepIndex}
             onMouseEnter={onStatusIconHover}
             onMouseLeave={onStatusIconLeave}
+            className="w-full h-full"
           />
         </div>
         <div>

@@ -39,6 +39,11 @@ export default function TicketTimelineLoader() {
                   <label className="text-darkWhite text-sm block mb-1">Priority:</label>
                   <div className="bg-darkWhite bg-opacity-30 rounded-full h-6 w-20 animate-pulse"></div>
                 </div>
+                
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Escalation Level:</label>
+                  <div className="bg-darkWhite bg-opacity-30 rounded-full h-6 w-16 animate-pulse"></div>
+                </div>
               </div>
 
               <div className="space-y-4">
@@ -54,9 +59,43 @@ export default function TicketTimelineLoader() {
               </div>
             </div>
 
+            {/* Additional Details */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+              <div className="space-y-4">
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Status:</label>
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-6 w-1/2 animate-pulse"></div>
+                </div>
+                
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Created:</label>
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-6 w-2/3 animate-pulse"></div>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Last Update:</label>
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-6 w-2/3 animate-pulse"></div>
+                </div>
+                
+                <div>
+                  <label className="text-darkWhite text-sm block mb-1">Reporter:</label>
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-6 w-1/2 animate-pulse"></div>
+                </div>
+              </div>
+            </div>
+
+            {/* Description Section */}
             <div className="mb-6 sm:mb-8">
-              <label className="text-darkWhite text-sm block mb-1">Last Update:</label>
-              <div className="bg-darkWhite bg-opacity-30 rounded h-6 w-1/3 animate-pulse"></div>
+              <label className="text-darkWhite text-sm block mb-2">Description:</label>
+              <div className="bg-white bg-opacity-5 rounded-lg p-4">
+                <div className="space-y-2">
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-4 w-full animate-pulse"></div>
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-4 w-3/4 animate-pulse"></div>
+                  <div className="bg-darkWhite bg-opacity-30 rounded h-4 w-1/2 animate-pulse"></div>
+                </div>
+              </div>
             </div>
 
             {/* Status Information Section */}
@@ -68,26 +107,26 @@ export default function TicketTimelineLoader() {
                 {/* Single Continuous Timeline Line */}
                 <div 
                   className="absolute left-[-32px] sm:left-[-40px] top-3 sm:top-4 w-0.5 bg-darkWhite z-0" 
-                  style={{ height: `${(5 - 1) * 6.5 * 16}px` }}
+                  style={{ height: `${(8 - 1) * 6.5 * 16}px` }}
                 />
                 
-                {["Loading...", "Loading...", "Loading...", "Loading...", "Loading..."].map((_, index) => (
+                {["Create Ticket", "Acknowledge", "Investigate", "Resolve", "Complete"].map((stepName, index) => (
                   <div key={index} className="relative mb-6 sm:mb-8 last:mb-0">
                     {/* Timeline Icon */}
-                    <div className="absolute left-[-50px] sm:left-[-58px] top-0 w-9 h-9 sm:w-11 sm:h-11 z-10 animate-pulse">
-                      <Image src="/icons/notStart.svg" alt="Loading" width={40} height={40} className="w-full h-full" />
+                    <div className="absolute left-[-50px] sm:left-[-58px] top-0 w-10 h-10 sm:w-11 sm:h-11 z-10">
+                      <Image src="/icons/notStart.svg" alt="Loading" width={36} height={36} className="w-full h-full animate-pulse" />
                     </div>
                     
                     {/* Loading Step Card */}
-                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-lg p-4 sm:p-6 w-fit min-w-[200px] sm:min-w-[250px]">
+                    <div className="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-4 sm:p-6 w-fit min-w-[200px] sm:min-w-[250px]">
                       <div className="bg-darkWhite bg-opacity-50 rounded h-6 w-32 mb-2 sm:mb-3 animate-pulse"></div>
-                      <div className="space-y-1 sm:space-y-2">
+                      <div className="space-y-1 sm:space-y-2 text-xs sm:text-sm text-darkWhite">
                         <div className="flex items-center gap-2">
-                          <span className="text-xs sm:text-sm text-darkWhite whitespace-nowrap">Date:</span>
+                          <span className="text-xs sm:text-sm whitespace-nowrap">Date:</span>
                           <div className="bg-darkWhite bg-opacity-30 rounded h-4 w-24 animate-pulse"></div>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-xs sm:text-sm text-darkWhite whitespace-nowrap">Time:</span>
+                          <span className="text-xs sm:text-sm whitespace-nowrap">Updated by:</span>
                           <div className="bg-darkWhite bg-opacity-30 rounded h-4 w-16 animate-pulse"></div>
                         </div>
                       </div>
