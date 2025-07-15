@@ -67,7 +67,31 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
   const [rowsPerPage, setRowsPerPage] = useState(20);
   const [comments, setComments] = useState<Comment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [hasMoreData, setHasMoreData] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [lastUpdate, setLastUpdate] = useState<string>("");
 
+  const loadMoreComments = async () => {
+    if (!hasMoreData || isLoadingMore) return;
+    
+    setIsLoadingMore(true);
+    try {
+      const response = await fetch(`/api/comments/database?limit=50&offset=${comments.length}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.comments && data.comments.length > 0) {
+          setComments(prev => [...prev, ...data.comments]);
+          setHasMoreData(data.comments.length === 50);
+        } else {
+          setHasMoreData(false);
+        }
+      }
+    } catch (error) {
+      console.error('Error loading more comments:', error);
+    } finally {
+      setIsLoadingMore(false);
+    }
+  };
 
   const filteredComments = comments.filter((comment) => {
     const matchCode = !filters.code || comment.ticketCode.includes(filters.code);
@@ -110,6 +134,12 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
 
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage);
+    
+    // Auto-load more data if user is near the end
+    const totalPages = Math.ceil(filteredComments.length / rowsPerPage);
+    if (newPage >= totalPages - 2 && hasMoreData && !isLoadingMore) {
+      loadMoreComments();
+    }
   };
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -124,10 +154,11 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
     async function fetchComments() {
       setIsLoading(true);
       try {
-        const response = await fetch('/api/comments/database?limit=100');
+        const response = await fetch('/api/comments/database?limit=50');
         if (response.ok) {
           const data = await response.json();
           setComments(data.comments || []);
+          setHasMoreData(data.comments && data.comments.length === 50);
         } else {
           console.error('Failed to fetch comments:', response.statusText);
         }
@@ -272,7 +303,14 @@ export default function ConversationTable({ filters }: { filters: ConversationFi
         </div>
       </div>
 
-      <div className="flex justify-end border-t border-gray-600 flex-shrink-0">
+      <div className="flex justify-between items-center border-t border-gray-600 flex-shrink-0">
+        {isLoadingMore && (
+          <div className="flex items-center gap-2 px-4 py-2 text-gray-400">
+            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <span className="text-xs">Loading more...</span>
+          </div>
+        )}
+        <div className="flex-1"></div>
         <TablePagination
           component="div"
           count={filteredComments.length}

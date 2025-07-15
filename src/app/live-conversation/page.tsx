@@ -23,38 +23,35 @@ export default function LiveConversationPage() {
   const [filtersVisible, setFiltersVisible] = useState(false);
   const [customers, setCustomers] = useState<Record<string, string>>({});
   const [ticketCodes, setTicketCodes] = useState<string[]>([]);
+  const [isLoadingFilters, setIsLoadingFilters] = useState(true);
 
-  // Load customer data
+  // Load filter data in parallel (optimized)
   useEffect(() => {
-    async function loadCustomers() {
+    async function loadFilterData() {
+      setIsLoadingFilters(true);
       try {
-        const response = await fetch('/data/customerMap.json');
-        if (response.ok) {
-          const customerData = await response.json();
+        const [customerResponse, commentsResponse] = await Promise.all([
+          fetch('/data/customerMap.json'),
+          fetch('/api/comments/database?limit=200')
+        ]);
+
+        if (customerResponse.ok) {
+          const customerData = await customerResponse.json();
           setCustomers(customerData);
         }
-      } catch (error) {
-        console.error('Failed to load customer data:', error);
-      }
-    }
-    loadCustomers();
-  }, []);
 
-  // Load ticket codes from comments API
-  useEffect(() => {
-    async function loadTicketCodes() {
-      try {
-        const response = await fetch('/api/comments/database?limit=1000');
-        if (response.ok) {
-          const data = await response.json();
+        if (commentsResponse.ok) {
+          const data = await commentsResponse.json();
           const uniqueCodes = [...new Set(data.comments?.map((comment: any) => comment.ticketCode))].filter(Boolean).sort() as string[];
           setTicketCodes(uniqueCodes);
         }
       } catch (error) {
-        console.error('Failed to load ticket codes:', error);
+        console.error('Failed to load filter data:', error);
+      } finally {
+        setIsLoadingFilters(false);
       }
     }
-    loadTicketCodes();
+    loadFilterData();
   }, []);
 
 
@@ -80,10 +77,11 @@ export default function LiveConversationPage() {
       {/* Toggle Filters Visibility */}
       <div className="flex justify-start mb-2">
         <button
-          className="text-sm text-white bg-logoBlack bg-opacity-70 px-3 py-1 rounded hover:bg-logoBlue"
+          className="text-sm text-white bg-logoBlack bg-opacity-70 px-3 py-1 rounded hover:bg-logoBlue disabled:opacity-50"
           onClick={() => setFiltersVisible(!filtersVisible)}
+          disabled={isLoadingFilters}
         >
-          {filtersVisible ? "Hide Filters" : "Show Filters"}
+          {isLoadingFilters ? "Loading Filters..." : filtersVisible ? "Hide Filters" : "Show Filters"}
         </button>
       </div>
 
